@@ -1,0 +1,229 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    box-shadow: 0 4px 8px #00000014;
+    background-color: #d8dff5;
+    height: 80px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgb(246, 246, 248);
+    z-index: 1000;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+}
+
+.menu-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.menu-toggle:hover {
+    transform: rotate(5deg) scale(1.1);
+}
+
+.nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 80px;
+    background: rgba(160, 180, 227, 0.6);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    z-index: 1000;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+.nav-link {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 500;
+    font-family: 'Federant', serif;
+    color: #012970;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 0.75rem 0;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.nav-link:hover {
+    color: #b7b6b6;
+    transform: translateX(5px);
+}
+
+.nav-section {
+    margin-top: 60px;
+    border-top: 2px solid grey;
+}
+
+.nav-div{
+    margin-top: 4px;
+    position: relative;
+
+}
+
+#nav-img{
+    height: 30px;
+    margin-right: 6px;
+}
+
+#nav-digunec-logo{
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    position: relative;
+    top: -8px;
+    color: #012970;
+    font-family: "Federant", sans-serif;
+
+}
+
+.nav-link.active {
+    color: #ffffff;
+    background: rgba(147, 197, 253, 0.2);
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.right-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#divider {
+    width: 2px;
+    background-color: grey;
+    height: 30px;
+    margin-right: 20px;
+    margin-left: 70px;
+
+}
+
+.logo-div {
+    position: relative;
+}
+
+#logo-img {
+    height: 30px;
+    margin-right: 6px;
+}
+
+#digunec-logo {
+
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    position: relative;
+    top: -10px;
+    color: #012970;
+    font-family: "Nunito", sans-serif;
+}
+
+#dashboard {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: gray;
+    font-family: "Nunito", sans-serif;
+}
+
+#notification {
+    height: 20px;
+}
+
+.left-section button {
+    border-radius: 50%;
+    border: none;
+    padding: 8px;
+}
+
+#profile-image {
+    height: 40px;
+    border-radius: 50%;
+    margin-left: 20px;
+}
+
+.logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 1rem auto 0;
+    padding: 8px;
+    font-weight: 600;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: translateY(-2px);
+}
+
+
+
+
+
+
+
+
+
+@media screen and (max-width: 546px) {
+    .header {
+        padding: 8px;
+        height: 80px;
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 558px) {
+    .header-top{
+    padding: 0.8rem 0.3rem;
+    }
+
+    #digunec-logo {
+            top: -8px;
+        }
+    #notification {
+        height: 15px;
+    }
+
+    #profile-image {
+        height: 40px;
+    }
+
+}
