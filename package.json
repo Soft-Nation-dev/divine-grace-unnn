@@ -1,4 +1,5 @@
 {
+"homepage": " https://github.com/Soft-Nation-dev/divine-grace-unnn",
   "name": "my-react-app",
   "version": "1.0.0",
   "private": true,
@@ -6,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
+
   },
   "dependencies": {
     "aos": "^2.3.4",
@@ -20,6 +23,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.12",
     "vite": "^7.1.2"
