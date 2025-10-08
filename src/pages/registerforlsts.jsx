@@ -107,7 +107,7 @@ const handleSubmit = async (e) => {
         DepartmentInChurch: formData.departmentInChurch.join(", "),
         PositionInChurch: formData.positionInChurch,
         Student: formData.Student,
-        VisionGoals: formData.visionGoals,
+        Vision: formData.visionGoals,
         ...(formData.Student === "Yes"
           ? {
               DepartmentInSchool: formData.departmentInSchool,

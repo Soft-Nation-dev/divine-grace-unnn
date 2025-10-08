@@ -105,7 +105,7 @@ export default function SummitRegistrationForm() {
         DepartmentInChurch: summitFormData.summitDepartmentInChurch.join(", "),
         PositionInChurch: summitFormData.summitPositionInChurch,
         Student: summitFormData.summitStudent,
-        VisionGoals: summitFormData.summitVisionGoals,
+        Vision: summitFormData.summitVisionGoals,
         ...(summitFormData.summitStudent === "Yes"
           ? {
               DepartmentInSchool: summitFormData.summitDepartmentInSchool,
