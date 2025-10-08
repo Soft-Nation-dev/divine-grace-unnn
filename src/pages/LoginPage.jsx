@@ -43,7 +43,6 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-         credentials: "include"
       });
 
       if (!res.ok) {
@@ -110,6 +109,8 @@ export default function LoginPage() {
                 <option value="Mrs">Mrs</option>
                 <option value="Master">Master</option>
                 <option value="Miss">Miss</option>
+                <option value="Doctor">Dr</option>
+                <option value="Proffessor">Prof</option>
               </select>
 
               <input type="text" placeholder="Full Name" value={FullName} onChange={handleInputChange(setFullName)} required />

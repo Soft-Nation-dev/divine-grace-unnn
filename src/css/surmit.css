@@ -1,19 +1,122 @@
-
-#lsummit-title {
+#summit-h1 {
     margin-top: 80px;
     padding-top: 20px;
     text-align: center;
     font-family: "Agu Display", serif;
 }
 
-.lsummit-main-content{
-    padding-bottom: 50px;
+.summit-main-content {
+    /* padding-bottom: 50px; */
 }
 
-.lsummit-form {
-    background-color: #fff;
-    font-size: 17px;
+.summit-landing-section {
+    text-align: center;
+}
+
+.summit-landing {
+    margin-top: 80px;
+}
+
+.summit-hero-image {
+    padding-top: 10px;
+}
+
+.summit-h1 {
+    font-family: "Agu Display", serif;
+    color: #012970;
+    margin-bottom: 0;
+    font-size: 28px;
+}
+
+.imgg {
+    width: 90%;
+    height: auto;
+    max-height: 600px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    object-fit: cover;
+}
+
+.summit-intro {
     font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    color: #333;
+    margin: 20px auto;
+    max-width: 1300px;
+    line-height: 1.6;
+    padding: 0 8px;
+}
+
+.summit-proceed-btn {
+    background-color: rgb(22, 22, 65);
+    color: bisque;
+    border: none;
+    padding: 10px 20px;
+    font-family: "Agu Display", serif;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.summit-dept-button-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    position: relative;
+}
+
+.summit-dept-button {
+    background-color: #f0f0f5;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summit-dept-button.summit-selected {
+    background-color: #0046ff;
+    color: #fff;
+    border-color: #0046ff;
+    transform: scale(1.05);
+    box-shadow: 0 3px 6px rgba(0, 70, 255, 0.4);
+}
+
+.summit-dept-button:hover {
+    /* background-color: #dbe4ff; */
+    transform: scale(1.03);
+}
+
+.summit-dept-button:nth-child(odd) {
+    transform: rotate(-2deg);
+}
+
+.summit-dept-button:nth-child(even) {
+    transform: rotate(2deg);
+}
+
+.summit-dept-button:nth-child(3n) {
+    transform: rotate(-1deg);
+}
+
+.summit-dept-button:nth-child(5n) {
+    transform: rotate(1deg);
+}
+
+
+
+.summit-form {
+    background-color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
@@ -22,18 +125,18 @@
     width: 90%;
 }
 
-.lsummit-form label {
+.summit-form label {
     display: block;
     margin-bottom: 5px;
 }
 
-.lsummit-form input,
-.lsummit-form textarea,
-.lsummit-form select {
+.summit-form input,
+.summit-form textarea,
+.summit-form select {
     width: 100%;
     padding: 12px;
     margin-bottom: 15px;
-    border: 2px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
     outline: none;
@@ -42,16 +145,16 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.lsummit-form input:focus,
-.lsummit-form textarea:focus,
-.lsummit-form select:focus {
+.summit-form input:focus,
+.summit-form textarea:focus,
+.summit-form select:focus {
     border-color: #4b6cb7;
     box-shadow: 0 4px 12px rgba(75, 108, 183, 0.4),
         0 0 8px rgba(75, 108, 183, 0.3);
     transform: translateY(-2px);
 }
 
-.lsummit-submit-button {
+.summit-submit-button {
     background-color: rgb(22, 22, 65);
     color: bisque;
     border: none;
@@ -63,13 +166,59 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.lsummit-submit-button:hover {
+.summit-submit-button:hover {
     background-color: #152536;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     transform: translateY(-5px);
 }
 
-@keyframes lsummit-fadeIn {
+.summit-confirm-check {
+    display: flex !important;
+    align-items: center ;
+    justify-content: center;
+    gap: 10px;
+    background: #f9f9ff;
+    padding: 2px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.summit-confirm-check:hover {
+    background: #f0ebff;
+}
+
+.summit-confirm-check input[type="checkbox"] {
+    appearance: none;
+    width: 0;
+    height: 0;
+    border: 2px solid #7a42f4;
+    border-radius: 5px;
+    position: relative;
+    top: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.summit-confirm-check input[type="checkbox"]:checked {
+    background-color: #7a42f4;
+    border-color: #7a42f4;
+}
+
+.summit-confirm-check input[type="checkbox"]:checked::after {
+    content: "✔";
+    color: white;
+    position: absolute;
+    top: -2px;
+    left: 3px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+@keyframes fadeIn {
     from {
         opacity: 0;
         transform: scale(0.9);
@@ -81,7 +230,8 @@
     }
 }
 
-#receipt {
+
+#summit-receipt {
     width: 100%;
     max-width: 100%;
     padding: 20px;
@@ -91,7 +241,8 @@
     text-wrap: nowrap;
 }
 
-.receipt-container {
+/* Container */
+.summit-receipt-container {
     width: 98%;
     height: 100%;
     position: relative;
@@ -102,11 +253,6 @@
     border: 1px solid #ccc;
     border-radius: 12px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-.summit-receipt-container {
-    position: relative;
     overflow: hidden;
     z-index: 1;
 }
@@ -123,12 +269,95 @@
     pointer-events: none;
 }
 
-.summit-receipt-container>*:not(.receipt-bg) {
+.summit-receipt-container>*:not(.summit-receipt-bg) {
     position: relative;
     z-index: 1;
 }
 
+.summit-receipt-header {
+    border-bottom: 1px solid #ddd;
+    margin: 0;
+    padding: 3px;
+    /* height: 80px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: #c0cdf8;
+    text-align: center;
+}
 
+.summit-receipt-logo {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 8px;
+    top: 12px;
+    position: relative;
+}
+
+.summit-receipt-header h3 {
+    color: #012970;
+    font-family: "Nunito", sans-serif;
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.summit-receipt-subtitle {
+    font-size: 12px;
+    color: #555;
+    font-style: italic;
+}
+
+.summit-receipt-body {
+    text-align: center;
+    color: #000;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.summit-receipt-divider {
+    border: 0;
+    border-top: 1px dashed #999;
+    margin: 10px 0;
+}
+
+.summit-label {
+    font-weight: bold;
+    display: inline-block;
+    width: 140px;
+}
+
+.summit-value {
+    font-style: normal;
+}
+
+.summit-student-section {
+    margin-top: 10px;
+}
+
+.summit-receipt-footer {
+    margin-top: 20px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.summit-generate-btn {
+    background: #02e60a;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.summit-generate-btn:hover {
+    background: #45a049;
+}
 
 .summit-receipt-overlay {
     position: fixed;
@@ -140,10 +369,10 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    z-index: 2000;
+    z-index: 1000;
     margin: 5px auto;
     overflow-y: auto;
-    /* background: rgba(15, 15, 15, 0.85); */
+    background: rgba(15, 15, 15, 0.9);
 }
 
 .summit-receipt-wrapper {
@@ -152,7 +381,7 @@
     margin: 5px auto;
     overflow-y: auto;
     border-radius: 12px;
-    padding: 10px;
+    padding: 15px;
     max-width: 600px;
     width: 90%;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -160,13 +389,107 @@
 
 .summit-close-btn {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 5px;
+    right: 10px;
     background: transparent;
     border: none;
     font-size: 28px;
     cursor: pointer;
     z-index: 100;
+}
+
+.summit-checkmark {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: inline-block;
+    stroke-width: 2;
+    stroke: #22c55e;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px #22c55e;
+    animation: summit-fill 0.4s ease-in-out 0.4s forwards,
+        summit-scale 0.3s ease-in-out 0.9s both;
+    position: relative;
+}
+
+.summit-checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 4;
+    stroke-miterlimit: 10;
+    stroke: #22c55e;
+    fill: none;
+    animation: summit-stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.summit-checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke-width: 4;
+    stroke: #22c55e;
+    fill: none;
+    animation: summit-stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes summit-stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes summit-scale {
+
+    0%,
+    100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes summit-fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 60px #22c55e;
+    }
+}
+
+.summit-checkmark-cross {
+    stroke: #f44336;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 34;
+    stroke-dashoffset: 34;
+    animation: summit-stroke 0.4s ease forwards;
+}
+
+.summit-checkmark-circle.error {
+    stroke: #f44336;
+}
+
+.summit-result-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 15, 15, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2000;
+    color: #fff;
+    text-align: center;
+}
+
+.summit-result-screen h2 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #22c55e;
 }
 
 .summit-receipt-card {
@@ -176,7 +499,6 @@
     border-radius: 12px;
     width: 95%;
     max-width: 500px;
-    max-height: 100vh;
     margin: 5px auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -191,89 +513,52 @@
     text-align: center;
 }
 
-.summit-receipt-header {
-    height: 80px;
-    text-align: center;
-    display: flex;
-    margin: 0;
-    padding: 3px;
-    border-bottom: 2px solid rgb(246, 246, 248);
-    justify-content: center;
-    background-color: #c0cdf8;
+@media (min-width: 608px) {
+    .imgg {
+        object-fit: fill;
+    }
+    
 }
-
-.summit-receipt-header h3 {
-    color: #1a237e;
-    font-family: "Agu Display", sans-serif;
-    margin-bottom: 8px;
-    font-size: 15px;
-}
-.summit-church-name {
-    margin: 0;
-    font-size: 20px;
-    font-size: 21px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: #012970;
-    font-family: "Nunito", sans-serif;
-}
-.summit-receipt-header p {
-    font-style: italic;
-}
-
-.summit-receipt-logo {
-    width: 30px;
-    position: relative;
-    height: 30px;
-    /* margin-bottom: 10px; */
-    top: 10PX;
-}
-
-.summit-receipt-subtitle {
-    font-size: 11px;
-    color: #666;
-    margin: 0;
-}
-
-.summit-receipt-body {
-    text-align: center;
-    color: black;
-    font-size: 15px;
-    color: #666;
-    line-height: 1.6;
-    padding: 0;
-}
-
-.summit-receipt-footer {
-    margin-top: 20px;
-    padding-bottom: 0px;
-}
-
-.summit-generate-btn {
-    background: #02e60a;
-    color: white;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.summit-generate-btn:hover {
-    background: #45a049;
-}
-
-
 @media (max-width: 600px) {
-    .lsummit-form{
+    .summit-label {
+        width: 100%;
+        display: block;
+        text-align: left;
+        margin-bottom: 4px;
+    }
+
+    .summit-value {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .summit-receipt-body {
+        font-size: 13px;
+    }
+
+    .summit-receipt-wrapper {
+        padding: 10px;
+    }
+    .summit-form {
         width: 95%;
     }
-    .summit-receipt-wrapper {
-        width: 98%;
-        padding: 4px;
-    }
 
-    .summit-receipt-card {
-        width: 99%;
-        padding: 2px;
-    }
+   
 }
+
+@media print {
+
+.summit-generate-btn,
+.summit-close-btn {
+    display: none !important;
+}
+
+.summit-receipt-wrapper {
+    box-shadow: none;
+    border: none;
+}
+}
+
+
+
+

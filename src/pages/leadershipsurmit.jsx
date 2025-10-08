@@ -1,55 +1,122 @@
-// src/pages/leadershipsummit.jsx
 import React, { useState } from "react";
 import Header from "../components/header";
-import LoadingOverlay from "../components/overlay"; 
+import LoadingOverlay from "../components/overlay";
+import "../css/surmit.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Logo from "/web-app-manifest-512x512.png";
-import "../css/surmit.css";
+import HeroImg from "../images/word1.jpg";
+import First from "../images/lsts-training-lsta1.jpg";
+import Second from "../images/third image.jpg";
+import { FaCalendarAlt, FaBookOpen, FaUsers } from "react-icons/fa";
+import { LuLightbulb } from "react-icons/lu";
 
-export default function LeadershipSummit() {
-  const [Student, setStudentStatus] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submissionStatus, setSubmissionStatus] = useState(null);
-  const [submissionText, setSubmissionText] = useState("");
-  const [receiptData, setReceiptData] = useState(null);
-  const [showReceipt, setShowReceipt] = useState(false);
+export default function SummitRegistrationForm() {
+  const [summitStudent, setSummitStudentStatus] = useState("");
+  const [summitLoading, setSummitLoading] = useState(false);
+  const [summitSubmissionStatus, setSummitSubmissionStatus] = useState(null);
+  const [summitSubmissionText, setSummitSubmissionText] = useState("");
+  const [summitReceiptData, setSummitReceiptData] = useState(null);
+  const [summitShowReceipt, setSummitShowReceipt] = useState(false);
+  const [summitShowForm, setSummitShowForm] = useState(false);
 
-  const [formData, setFormData] = useState({
-    surname: "",
-    otherNames: "",
-    phoneNumber: "",
-    email: "",
-    residentialAddress: "",
-    gender: "",
-    departmentInChurch: "",
-    positionInChurch: "",
-    Student: "",
-     ...(Student && { departmentInSchool: "", level: "" })
+  const summitDepartments = [
+    "Choir/Instrumentalist",
+    "O.G.S",
+    "Publicity and Information",
+    "Media",
+    "Traffic Control",
+    "Security",
+    "Stock Keepers",
+    "Protocol",
+    "Ushering",
+    "Evangelism",
+    "Follow-up/Visitation",
+    "Prayer",
+    "SPI",
+    "Sanctuary",
+    "Decoration",
+  ];
+
+  const [summitFormData, setSummitFormData] = useState({
+    summitTitle: "",
+    summitSurname: "",
+    summitOtherNames: "",
+    summitPhoneNumber: "",
+    summitEmail: "",
+    summitResidentialAddress: "",
+    summitGender: "",
+    summitBaptized: "",
+    summitDepartmentInChurch: [],
+    summitPositionInChurch: "",
+    summitStudent: "",
+    summitDepartmentInSchool: "",
+    summitLevel: "",
+    summitVisionGoals: "",
+    summitConfirm: false,
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleSummitChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox" && name === "summitConfirm") {
+      setSummitFormData((prev) => ({ ...prev, summitConfirm: checked }));
+    } else {
+      setSummitFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmissionStatus(null);
+  const handleSummitDeptToggle = (dept) => {
+    setSummitFormData((prev) => {
+      const alreadySelected = prev.summitDepartmentInChurch.includes(dept);
+      return {
+        ...prev,
+        summitDepartmentInChurch: alreadySelected
+          ? prev.summitDepartmentInChurch.filter((d) => d !== dept)
+          : [...prev.summitDepartmentInChurch, dept],
+      };
+    });
+  };
 
-    const token = sessionStorage.getItem("authToken");
-    if (!token) {
-      setSubmissionStatus("error");
-      setSubmissionText("Unauthorized — please log in.");
+  const handleSummitSubmit = async (e) => {
+    e.preventDefault();
+    if (!summitFormData.summitConfirm) {
+      alert("Please confirm that the information you entered is true.");
       return;
     }
 
-    setLoading(true);
+    const token = sessionStorage.getItem("authToken");
+    if (!token) {
+      setSummitSubmissionStatus("error");
+      setSummitSubmissionText("Unauthorized — please log in.");
+      return;
+    }
 
+    setSummitLoading(true);
     try {
+      const payload = {
+        Title: summitFormData.summitTitle,
+        Surname: summitFormData.summitSurname,
+        OtherNames: summitFormData.summitOtherNames,
+        PhoneNumber: summitFormData.summitPhoneNumber,
+        Email: summitFormData.summitEmail,
+        ResidentialAddress: summitFormData.summitResidentialAddress,
+        Gender: summitFormData.summitGender,
+        Baptized: summitFormData.summitBaptized,
+        DepartmentInChurch: summitFormData.summitDepartmentInChurch.join(", "),
+        PositionInChurch: summitFormData.summitPositionInChurch,
+        Student: summitFormData.summitStudent,
+        VisionGoals: summitFormData.summitVisionGoals,
+        ...(summitFormData.summitStudent === "Yes"
+          ? {
+              DepartmentInSchool: summitFormData.summitDepartmentInSchool,
+              Level: parseInt(summitFormData.summitLevel) || 0,
+            }
+          : {
+              DepartmentInSchool: "",
+              Level: 0,
+            }),
+      };
+
       const res = await fetch(
         "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/Summit/submit",
         {
@@ -58,103 +125,77 @@ export default function LeadershipSummit() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         }
       );
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        let message;
-
-        if (typeof errData === "string") {
-          message = errData;
-        } else if (typeof errData?.message === "string") {
-          message = errData.message;
-        } else if (typeof errData?.errors === "string") {
-          message = errData.errors;
-        } else {
-          message = JSON.stringify(errData); // fallback to string
-        }
-
-        setSubmissionStatus("error");
-        setSubmissionText(message);
-        return;
+        const errText = await res.text().catch(() => "");
+        throw new Error(errText || "Submission failed");
       }
 
-      await res.json().catch(() => ({}));
-      setSubmissionStatus("success");
-      setSubmissionText("Form submitted successfully 🎉");
-      const receipt = { ...formData, submittedAt: new Date().toLocaleString() };
-      setReceiptData(receipt);
-      setShowReceipt(true);
+      setSummitSubmissionStatus("success");
+      setSummitSubmissionText("Form submitted successfully 🎉");
+      const receipt = { ...summitFormData, submittedAt: new Date().toLocaleString() };
+      setSummitReceiptData(receipt);
+      setSummitShowReceipt(true);
 
-      setFormData({
-        surname: "",
-        otherNames: "",
-        phoneNumber: "",
-        residentialAddress: "",
-        gender: "",
-        departmentInChurch: "",
-        positionInChurch: "",
-        Student: "",
-        departmentInSchool: "",
-        level: "",
+      setSummitFormData({
+        summitTitle: "",
+        summitSurname: "",
+        summitOtherNames: "",
+        summitPhoneNumber: "",
+        summitEmail: "",
+        summitResidentialAddress: "",
+        summitGender: "",
+        summitBaptized: "",
+        summitDepartmentInChurch: [],
+        summitPositionInChurch: "",
+        summitVisionGoals: "",
+        summitStudent: "",
+        summitDepartmentInSchool: "",
+        summitLevel: "",
+        summitConfirm: false,
       });
-    //   setStudentStatus("");
-    //   setTimeout(() => {
-    //   setSubmissionStatus(null);
-    //   setSubmissionText("");
-    // }, 3000);
-
-
+      setSummitStudentStatus("");
     } catch (err) {
-      const msg = err?.message || "Failed to submit form";
-      setSubmissionStatus("error");
-      setSubmissionText(msg);
+      console.error(err);
+      setSummitSubmissionStatus("error");
+      setSummitSubmissionText(err.message || "Failed to submit form");
     } finally {
-      setLoading(false);
+      setSummitLoading(false);
     }
   };
-const generatePDF = async (receiptData) => {
-    setLoading(true);
 
+  const generateSummitPDF = async (receiptData) => {
+    setSummitLoading(true);
     const receiptElement = document.querySelector(".summit-receipt-card");
-    if (!receiptElement) {
-      console.error("❌ No .summit-receipt-card element found");
-      setLoading(false);
-      return;
-    }
-
+    if (!receiptElement) return;
     try {
       const canvas = await html2canvas(receiptElement, {
         useCORS: true,
         backgroundColor: "#fff",
         scale: 2,
       });
-
       const imgData = canvas.toDataURL("image/png");
-
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-
       const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
       const imgWidth = canvas.width * ratio;
       const imgHeight = canvas.height * ratio;
-       const x = (pdfWidth - imgWidth) / 2;
+      const x = (pdfWidth - imgWidth) / 2;
       const y = (pdfHeight - imgHeight) / 2;
-
       pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-
       pdf.save(
-        `${receiptData.otherNames || "Student"}_Summit_Receipt_${new Date()
+        `${receiptData.summitOtherNames || "Student"}_Summit_Receipt_${new Date()
           .toLocaleDateString()
           .replace(/\//g, "-")}.pdf`
       );
-    } catch (error) {
-      console.error("❌ Error generating receipt PDF:", error);
+    } catch (err) {
+      console.error("Error generating PDF:", err);
     } finally {
-      setLoading(false);
+      setSummitLoading(false);
     }
   };
 
@@ -164,12 +205,13 @@ const generatePDF = async (receiptData) => {
         <button
           className="summit-close-btn"
           onClick={() => {
-            setShowReceipt(false);
-            setSubmissionStatus(null);
-            setSubmissionText("");
+            setSummitShowForm(false);
+            setSummitShowReceipt(false);
+            setSummitSubmissionStatus(null);
+            setSummitSubmissionText("");
           }}
         >
-           ❌
+          ❌
         </button>
         <div className="summit-receipt-card">
           <img src={Logo} alt="Background" className="summit-receipt-bg" />
@@ -178,242 +220,324 @@ const generatePDF = async (receiptData) => {
               <img src={Logo} alt="Church Logo" className="summit-receipt-logo" />
               <div>
                 <h3>DIVINE GRACE UNN CAMPUS</h3>
-                <p className="summit-receipt-subtitle">Leadership Summit Registration Receipt</p>
+                <p className="summit-receipt-subtitle">Summit Registration Receipt</p>
               </div>
             </div>
             <div className="summit-receipt-body">
-              <p><strong>Name:</strong> {receiptData.surname} {receiptData.otherNames}</p>
-              <p><strong>Phone:</strong> {receiptData.phoneNumber}</p>
-              <p><strong>Email:</strong> {receiptData.email}</p>
-              <p><strong>Address:</strong> {receiptData.residentialAddress}</p>
-              <p><strong>Gender:</strong> {receiptData.gender}</p>
-              <p><strong>Department:</strong> {receiptData.departmentInChurch}</p>
-              <p><strong>Position:</strong> {receiptData.positionInChurch}</p>
-              <p><strong>Student:</strong> {receiptData.Student}</p>
-              {receiptData.Student === "Yes" && (
+              <p>
+                <strong>Name:</strong> {summitReceiptData.summitTitle} {summitReceiptData.summitSurname}{" "}
+                {summitReceiptData.summitOtherNames}
+              </p>
+              <p>
+                <strong>Phone:</strong> {summitReceiptData.summitPhoneNumber}
+              </p>
+              <p>
+                <strong>Email:</strong> {summitReceiptData.summitEmail}
+              </p>
+              <p>
+                <strong>Address:</strong> {summitReceiptData.summitResidentialAddress}
+              </p>
+              <p>
+                <strong>Gender:</strong> {summitReceiptData.summitGender}
+              </p>
+              <p>
+                <strong>Departments:</strong>{" "}
+                {summitReceiptData.summitDepartmentInChurch.join(", ")}
+              </p>
+              <p>
+                <strong>Position:</strong> {summitReceiptData.summitPositionInChurch}
+              </p>
+              <p>
+                <strong>Student:</strong> {summitReceiptData.summitStudent}
+              </p>
+              {summitReceiptData.summitStudent === "Yes" && (
                 <>
-                  <p><strong>School Department:</strong> {receiptData.departmentInSchool}</p>
-                  <p><strong>Level:</strong> {receiptData.level}</p>
+                  <p>
+                    <strong>School Department:</strong>{" "}
+                    {summitReceiptData.summitDepartmentInSchool}
+                  </p>
+                  <p>
+                    <strong>Level:</strong> {summitReceiptData.summitLevel}
+                  </p>
                 </>
               )}
-               <p><strong>Date:</strong> {receiptData.submittedAt}</p>
+              <p>
+                <strong>Date:</strong> {summitReceiptData.submittedAt}
+              </p>
             </div>
           </div>
         </div>
+
         <div className="summit-receipt-footer">
           <button
             className="summit-generate-btn"
-            disabled={loading}
-            onClick={() => generatePDF(receiptData)}
+            disabled={summitLoading}
+            onClick={() => generateSummitPDF(summitReceiptData)}
           >
-            {loading ? "Generating..." : "Download PDF"}
+            {summitLoading ? "Generating..." : "Download PDF"}
           </button>
         </div>
       </div>
     </div>
   );
 
-
-
-
   return (
     <>
       <Header />
-      {loading && <LoadingOverlay status="loading" text="loading" />}
+      {summitLoading && <LoadingOverlay text="Processing..." />}
 
-      <section className="lsummit-main-content">
-        {showReceipt && receiptData && <SummitReceiptOverlay />}
-
-        {submissionStatus === "error" && (
-          <div className="result-screen error">
-            <div className="icon">❌</div>
-            <h2>{submissionText}</h2>
-          </div>
-        )}
-
-        {!submissionStatus && (
-          <>
-            <div id="lsummit-title">
-              <h1>Leadership Summit Registration Form</h1>
-            </div>
-
-            <form
-              id="lsummit-form"
-              className="lsummit-form"
-              onSubmit={handleSubmit}
-            >
-              <label htmlFor="lsummit-surname">Surname</label>
-              <input
-                type="text"
-                id="lsummit-surname"
-                name="surname"
-                value={formData.surname}
-                onChange={handleChange}
-                required
-              />
-
-              <label htmlFor="lsummit-otherNames">Other Names</label>
-              <input
-                type="text"
-                id="lsummit-otherNames"
-                name="otherNames"
-                value={formData.otherNames}
-                onChange={handleChange}
-                required
-              />
-
-              <label htmlFor="lsummit-phoneNumber">Phone Number</label>
-              <input
-                type="tel"
-                id="lsummit-phoneNumber"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-                pattern="[0-9]+"
-                title="Enter a valid phone number"
-              />
-
-              <label htmlFor="lsummit-email">Email</label>
-              <input
-                type="email"
-                id="lsummit-email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-
-              <label htmlFor="lsummit-residentialAddress">
-                Residential Address
-              </label>
-              <textarea
-                id="lsummit-residentialAddress"
-                name="residentialAddress"
-                rows="3"
-                value={formData.residentialAddress}
-                onChange={handleChange}
-                required
-              />
-
-              <label htmlFor="lsummit-gender">Gender</label>
-              <select
-                id="lsummit-gender"
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>
-                  Select your gender
-                </option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-
-              <label htmlFor="lsummit-departmentInChurch">Department in the Church</label>
-              <select
-                id="lsummit-departmentInChurch"
-                name="departmentInChurch"
-                value={formData.departmentInChurch}
-                onChange={handleChange}
-                required
-              >
-              <option value="" disabled>
-                Select a departmentInChurch
-                  </option>
-                  <option value="Choir/Instrumentalist Department">Choir/Instrumentalist</option>
-                  <option value="O.G.S Department">O.G.S</option>
-                  <option value="Publicity and Information Department">Publicity and Information</option>
-                  <option value="Media Department">Media</option>
-                  <option value="Traffic controll Department">Traffic controll</option>
-                  <option value="Security Department">Security</option>
-                  <option value="Stock Keepers Department">Stock Keepers</option>
-                  <option value="Protocol Deparment">Protocol</option>
-                  <option value="Ushering Department">Ushering</option>
-                  <option value="Evangelism Department">Evangelism</option>
-                  <option value="Follow-Up/Visitaion Department">Follow up/Visitation</option>
-                  <option value="Prayer Department">Prayer</option>
-                  <option value="SPI Department">SPI</option>
-                  <option value="Sanctuary Department">Sanctuary</option>
-                  <option value="Decoration Department">Decorations</option>
-               </select>
-
-              <label htmlFor="lsummit-positionInChurch">Position in the Church</label>
-              <select
-                id="lsummit-positionInChurch"
-                name="positionInChurch"
-                value={formData.positionInChurch}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>
-                  Select a positionInChurch
-                </option>
-                <option value="Pastor">Pastor</option>
-                <option value="Leader">Leader</option>
-                <option value="Worker">Worker</option>
-                <option value="Minister">Minister</option>
-                <option value="Member">Member</option>
-              </select>
-
-              <label htmlFor="lsummit-Student">Are you a student?</label>
-              <select
-                id="lsummit-Student"
-                name="Student"
-                value={formData.Student}
-                onChange={(e) => {
-                  handleChange(e);
-                  setStudentStatus(e.target.value);
+      <section className="summit-main-content">
+        {!summitShowForm ? (
+          <section className="summit-landing-section">
+            <div className="summit-landing">
+              <div>
+                <h1 className="summit-h1">Leadership Summit</h1>
+              </div>
+              <div className="summit-hero-image">
+                <img className="imgg" src={HeroImg} alt="" />
+              </div>
+              <p className="summit-intro">
+             The Leadership Summit is a Divine Grace UNN annual program, held every year end,
+              dedicated to empowering believers with deep spiritual insight, leadership excellence,
+               and personal development skills. It is more than just a program, it’s a divine encounter
+               where leaders are revived, refined, and realigned for greater impact.
+              Each year, We gather to encounter the Lord in a fresh way, receive strategic
+                impartation, and build lasting relationships with like-minded leaders. No one comes and
+                leaves the same , visions are birthed, hearts are set ablaze, and destinies are propelled forward in God’s purpose.
+              </p>
+              <p className="italic">Registration is free, click the button below to register</p>
+              <button
+                className="summit-proceed-btn"
+                onClick={() => {
+                  setSummitShowForm(true);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                required
               >
-                <option value="" disabled>
-                  Select an option
-                </option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
+                Click to Register
+              </button>
 
-              {Student === "Yes" && (
-                <div id="lsummit-schoolDetails">
-                  <label htmlFor="lsummit-departmentInSchool">
-                    Department in School
-                  </label>
-                  <input
-                    type="text"
-                    id="lsummit-departmentInSchool"
-                    name="departmentInSchool"
-                    value={formData.departmentInSchool}
-                    onChange={handleChange}
-                  />
+            </div>
+          </section>
+        ) : summitShowReceipt && summitReceiptData ? (
+          <SummitReceiptOverlay />
+        ) : (
+          <>
+            {summitSubmissionStatus === "error" && (
+              <div className="summit-result-screen error">
+                <div className="summit-icon">❌</div>
+                <h2>{summitSubmissionText}</h2>
+              </div>
+            )}
 
-                  <label htmlFor="lsummit-level">Level</label>
+            {!summitSubmissionStatus && (
+              <>
+                <div id="summit-h1">
+                  <h1>Summit Registration Form</h1>
+                </div>
+
+                <form className="summit-form" onSubmit={handleSummitSubmit}>
+                  <label>Title</label>
                   <select
-                    id="lsummit-level"
-                    name="level"
-                    value={formData.level}
-                    onChange={handleChange}
+                    name="summitTitle"
+                    value={summitFormData.summitTitle}
+                    onChange={handleSummitChange}
+                    required
                   >
                     <option value="" disabled>
-                      Select your level
+                      Select title
                     </option>
-                    <option value="100">100 Level</option>
-                    <option value="200">200 Level</option>
-                    <option value="300">300 Level</option>
-                    <option value="400">400 Level</option>
-                    <option value="500">500 Level</option>
-                    <option value="600">600 Level</option>
+                    <option>Mr</option>
+                    <option>Mrs</option>
+                    <option>Miss</option>
+                    <option>Master</option>
+                    <option>Dr</option>
+                    <option>Prof</option>
                   </select>
-                </div>
-              )}
 
-              <div className="align">
-                <button className="lsummit-submit-button" type="submit" disabled={loading}>
-                  {loading ? "Submitting..." : "Submit"}
-                </button>
-              </div>
-            </form>
+                  <label>Surname</label>
+                  <input
+                    name="summitSurname"
+                    value={summitFormData.summitSurname}
+                    onChange={handleSummitChange}
+                    required
+                  />
+
+                  <label>Other Names</label>
+                  <input
+                    name="summitOtherNames"
+                    value={summitFormData.summitOtherNames}
+                    onChange={handleSummitChange}
+                    required
+                  />
+
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    name="summitPhoneNumber"
+                    value={summitFormData.summitPhoneNumber}
+                    onChange={handleSummitChange}
+                    required
+                  />
+
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="summitEmail"
+                    value={summitFormData.summitEmail}
+                    onChange={handleSummitChange}
+                    required
+                  />
+
+                  <label>Residential Address</label>
+                  <textarea
+                    name="summitResidentialAddress"
+                    rows="3"
+                    value={summitFormData.summitResidentialAddress}
+                    onChange={handleSummitChange}
+                    required
+                  />
+
+                  <label>Gender</label>
+                  <select
+                    name="summitGender"
+                    value={summitFormData.summitGender}
+                    onChange={handleSummitChange}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select gender
+                    </option>
+                    <option>Male</option>
+                    <option>Female</option>
+                  </select>
+
+                  <label>Baptized</label>
+                  <select
+                    name="summitBaptized"
+                    value={summitFormData.summitBaptized}
+                    onChange={handleSummitChange}
+                    required
+                  >
+                    <option value="" disabled>
+                      Are you baptized?
+                    </option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+
+                  <label>Departments in the Church (Select all that apply)</label>
+                  <div className="summit-dept-button-grid">
+                    {summitDepartments.map((dept) => {
+                      const selected = summitFormData.summitDepartmentInChurch.includes(dept);
+                      return (
+                        <button
+                          key={dept}
+                          type="button"
+                          className={`summit-dept-button ${
+                            selected ? "summit-selected" : ""
+                          }`}
+                          onClick={() => handleSummitDeptToggle(dept)}
+                        >
+                          {dept}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <label>Position in the Church</label>
+                  <select
+                    name="summitPositionInChurch"
+                    value={summitFormData.summitPositionInChurch}
+                    onChange={handleSummitChange}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select position
+                    </option>
+                    <option>Pastor</option>
+                    <option>Leader</option>
+                    <option>Worker</option>
+                    <option>Minister</option>
+                    <option>Member</option>
+                  </select>
+
+                  <label>Vision / Goals</label>
+                  <textarea
+                    name="summitVisionGoals"
+                    rows="4"
+                    placeholder="Share your vision, goals, or expectations..."
+                    value={summitFormData.summitVisionGoals}
+                    onChange={handleSummitChange}
+                    required
+                  />
+
+                  <label>Are you a student?</label>
+                  <select
+                    name="summitStudent"
+                    value={summitFormData.summitStudent}
+                    onChange={(e) => {
+                      handleSummitChange(e);
+                      setSummitStudentStatus(e.target.value);
+                    }}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select option
+                    </option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+
+                  {summitFormData.summitStudent === "Yes" && (
+                    <>
+                      <label>Department in School</label>
+                      <input
+                        name="summitDepartmentInSchool"
+                        value={summitFormData.summitDepartmentInSchool}
+                        onChange={handleSummitChange}
+                      />
+
+                      <label>Level</label>
+                      <select
+                        name="summitLevel"
+                        value={summitFormData.summitLevel}
+                        onChange={handleSummitChange}
+                      >
+                        <option value="" disabled>
+                          Select your level
+                        </option>
+                        <option>100</option>
+                        <option>200</option>
+                        <option>300</option>
+                        <option>400</option>
+                        <option>500</option>
+                        <option>600</option>
+                      </select>
+                    </>
+                  )}
+
+                  <label className="summit-confirm-check">
+                    <input
+                      type="checkbox"
+                      name="summitConfirm"
+                      checked={summitFormData.summitConfirm}
+                      onChange={handleSummitChange}
+                    />{" "}
+                    I confirm the information entered above is true.
+                  </label>
+
+                  <div className="align">
+                    <button
+                      className="summit-submit-button"
+                      type="submit"
+                      disabled={summitLoading}
+                    >
+                      {summitLoading ? "Submitting..." : "Submit"}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </>
         )}
       </section>

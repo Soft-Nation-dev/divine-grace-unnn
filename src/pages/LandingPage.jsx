@@ -49,11 +49,11 @@ export default function LandingPage() {
 
           <div data-aos="fade-up" className="hero-container">
       <video className="hero-video" autoPlay muted loop playsInline>
-        <source src="/divine-grace-unnn/media/background-video.mp4" type="video/mp4" />
+        <source src="/media/background-video.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <div className="hero-overlay">
-        <img className='overlay-img' src="/divine-grace-unnn/logo.png" alt="" />
+        <img className='overlay-img' src="/logo.png" alt="" />
       </div>
       </div>
        </div>
@@ -72,7 +72,7 @@ export default function LandingPage() {
              and that is why teaching, studying, and living by the Scriptures remain at the very center of all we do.
             </p>
           <div data-aos="slide-right" className='first-image-div'>
-            <img  className='first-image' src="/divine-grace-unnn/first image.jpg" alt="" />
+            <img  className='first-image' src="/first image.jpg" alt="" />
           </div>
     <section>
         <div>
@@ -82,7 +82,7 @@ export default function LandingPage() {
         <div data-aos="fade-up" className="ourvalue-grid">
             <div className="colour-grid">
                 <div className="snappic1-div" >
-                    <img src="/divine-grace-unnn/soul.jpg" alt="" className="snappic1"/>
+                    <img src="/soul.jpg" alt="" className="snappic1"/>
                 </div>
                 <div>
                     <p className="soul-p">Soul Winning</p>
@@ -93,7 +93,7 @@ export default function LandingPage() {
                   </div>
                     <div className="colour-grid">
                 <div className="snappic1-div">
-                    <img src="/divine-grace-unnn/word1.jpg" alt="" className="snappic2"/>
+                    <img src="/word1.jpg" alt="" className="snappic2"/>
                 </div>
                 <div>
                     <p className="vision-p">Rightfully dividing the word of God</p>
@@ -107,7 +107,7 @@ export default function LandingPage() {
         <div data-aos="fade-up" className="ourvalue-grid">
             <div className="colour-grid">
                 <div className="snappic1-div" >
-                    <img src="/divine-grace-unnn/prayer.jpg" alt="" className="snappic1"/>
+                    <img src="/prayer.jpg" alt="" className="snappic1"/>
                 </div>
                 <div>
                     <p className="soul-p">Prayer</p>
@@ -119,7 +119,7 @@ export default function LandingPage() {
             </div>
           <div className="colour-grid">
                 <div className="snappic1-div">
-                    <img src="/divine-grace-unnn/leaders.jpg" alt="" className="snappic2"/>
+                    <img src="/leaders.jpg" alt="" className="snappic2"/>
                 </div>
                 <div>
                     <p className="vision-p">Vision </p>
@@ -133,34 +133,34 @@ export default function LandingPage() {
    <div className="service-section">
     <div className="Service">SERVICES</div>
     <div className="Service-time">
-        Tuesday (Mid-week Service) <br/> Time <img src="/divine-grace-unnn/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
+        Tuesday (Mid-week Service) <br/> Time <img src="/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
         </div>
                   
      <div className="Service-time">
-            Venue<img src="/divine-grace-unnn/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation ( Marlima Upstairs )
+            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation ( Marlima Upstairs )
         </div>
     <div className="Service-time">
         Friday (LSTS)
-        <Link className="lsts-anchor"  to="/login">Click To Register</Link> <br/>Time <img src="/divine-grace-unnn/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
+        <Link className="lsts-anchor"  to="/login">Click To Register</Link> <br/>Time <img src="/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
     </div>
     
       <div className="Service-time">
-            Venue<img src="/divine-grace-unnn/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation ( Benima )
+            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation ( Benima )
         </div>
 
     <div className="Service-time">
                       Sunday Service- <br /> Time: <br />
-                      <img src="/divine-grace-unnn/pngaaa.com-473864.png" alt="" className="time-image" />: 8:00am - 9am ( First Service )<br/>
-                      <img src="/divine-grace-unnn/pngaaa.com-473864.png" alt="" className="time-image" />: 9:00am - 11am ( Second Service )
+                      <img src="/pngaaa.com-473864.png" alt="" className="time-image" />: 8:00am - 9am ( First Service )<br/>
+                      <img src="/pngaaa.com-473864.png" alt="" className="time-image" />: 9:00am - 11am ( Second Service )
         
     </div>
     <div>
         <div className="Service-time">
-            Venue<img src="/divine-grace-unnn/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation (Marlima Upstairs)
+            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation (Marlima Upstairs)
         </div>
     </div>
     <div className="Service-time">
-        <p className="callus">For more enquires call us <img src="/divine-grace-unnn/kisspng-computer-icons-telephone-call-5af1f6d96f06b6.4041455015258068094548.png" alt="" className="time-image"/></p>
+        <p className="callus">For more enquires call us <img src="/kisspng-computer-icons-telephone-call-5af1f6d96f06b6.4041455015258068094548.png" alt="" className="time-image"/></p>
        <p className="callus">+2347065274878 <br/>+2348162650708 
            <br/>+2347041629192 <br/>+2347034207220 <br/> Email: info@divinegraceunn.com.ng</p>
     </div>
@@ -169,15 +169,15 @@ export default function LandingPage() {
     <footer className="footer">
               <div className='foot'>
                   <div className="footer-logo">
-            <img className="logo-img" src="/divine-grace-unnn/logo.png" alt=""/>
+            <img className="logo-img" src="/logo.png" alt=""/>
             <span className="digunec">
                 DIGUNN
             </span>
         </div>
         <div className="social-div">
-            <a target='blanc' href="https://web.facebook.com/p/Divine-Grace-UNN-Campus-61551659589725/?_rdc=1&_rdr#"><img src="/divine-grace-unnn/facebook-logo-2428.png" alt=""/></a>
-            <img src="/divine-grace-unnn/instagram-logo-8869.png" alt=""/>
-            <img src="/divine-grace-unnn/twitter-x-blue-logo-round-20859.png" alt=""/>
+            <a target='blanc' href="https://web.facebook.com/p/Divine-Grace-UNN-Campus-61551659589725/?_rdc=1&_rdr#"><img src="/facebook-logo-2428.png" alt=""/></a>
+            <img src="/instagram-logo-8869.png" alt=""/>
+            <img src="/twitter-x-blue-logo-round-20859.png" alt=""/>
         </div>
         <div className="copyright-div">
             <p className="copyright">&copy;copyright <b>DIGUNN</b>&#46; All right reserved</p>

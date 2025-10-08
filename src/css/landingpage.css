@@ -100,6 +100,8 @@
     border-radius: 30px;
     padding: 0;
      background-color: #e9eaee; 
+     display: flex;
+     justify-content: center;
 }
 
 .welcome{
@@ -134,6 +136,7 @@
     text-align: center;
     line-height: 23px;
     margin-top: 6px;
+    max-width: 1500px;
     padding: 3px;
 }
 
@@ -144,6 +147,7 @@
 
 .first-image{
     width: 96%;
+   
 }
 
 .first-image-div{

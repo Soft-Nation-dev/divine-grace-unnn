@@ -125,6 +125,7 @@ export default function Admin() {
         setPrayers(Array.isArray(prayerData) ? prayerData : []);
         setLsts(Array.isArray(lstsData) ? lstsData : []);
         setSummits(Array.isArray(summitsData) ? summitsData : []);
+        console.log(lstsData)
       } catch (err) {
         console.error("Admin fetch error:", err);
         setError(err?.message || "Failed to load admin data");
@@ -431,14 +432,17 @@ export default function Admin() {
                 displayed.map((person, i) => (
                   <div className="admin-card" key={i}>
                     <h4 style={{ marginBottom: '6px' }}>#{i + 1}</h4>
+                    <p><strong>Title:</strong> {person.title}</p>
                     <p><strong>Surname:</strong> {person.surname}</p>
                     <p><strong>Other Names:</strong> {person.otherNames}</p>
                     <p><strong>Phone:</strong> {person.phoneNumber}</p>
                     <p><strong>Email:</strong> {person.email}</p>
                     <p><strong>Address:</strong> {person.residentialAddress}</p>
+                    <p><strong>Gender:</strong> {person.gender}</p>
                     <p><strong>Department:</strong> {person.departmentInChurch ?? person.department}</p>
                     <p><strong>Position:</strong> {person.positionInChurch ?? person.position}</p>
-                    <p><strong>Gender:</strong> {person.gender}</p>
+                    <p><strong>Baptized:</strong> {person.baptized}</p>
+                    <p><strong>Vision:</strong> {person.vision}</p>
                     <p><strong>Is Student:</strong> {person.student ?? person.isStudent}</p>
                     {String(person.student ?? person.isStudent ?? "").toLowerCase() === "yes" && (
                       <>
@@ -551,14 +555,17 @@ export default function Admin() {
                 summits.map((s, i) => (
                   <div className="admin-card" key={i}>
                     <h4 style={{ marginBottom: '6px' }}>#{i + 1}</h4>
+                    <p><strong>Title:</strong> {s.title}</p>
                     <p><strong>Surname:</strong> {s.surname}</p>
                     <p><strong>Other Names:</strong> {s.otherNames}</p>
                     <p><strong>Phone:</strong> {s.phoneNumber}</p>
                     <p><strong>Email:</strong> {s.email}</p>
                     <p><strong>Address:</strong> {s.residentialAddress}</p>
+                    <p><strong>Gender:</strong> {s.gender}</p>
                     <p><strong>Department:</strong> {s.departmentInChurch ?? s.department}</p>
                     <p><strong>Position:</strong> {s.positionInChurch ?? s.position}</p>
-                    <p><strong>Gender:</strong> {s.gender}</p>
+                    <p><strong>Baptised:</strong> {s.baptized}</p>
+                    <p><strong>Vision:</strong> {s.vision}</p>
                     <p><strong>Is Student:</strong> {s.student}</p>
                     {String(s.student ?? "").toLowerCase() === "yes" && (
                       <>

@@ -104,7 +104,7 @@ export default function Dashboard() {
             <div className="footer-logo">
               <img
                 className="logo-img"
-                src="/divine-grace-unnn/logo.png"
+                src="/logo.png"
                 alt=""
               />
               <span className="digunec">DIGUNN</span>
@@ -115,13 +115,13 @@ export default function Dashboard() {
                 href="https://web.facebook.com/p/Divine-Grace-UNN-Campus-61551659589725/?_rdc=1&_rdr#"
               >
                 <img
-                  src="/divine-grace-unnn/facebook-logo-2428.png"
+                  src="/facebook-logo-2428.png"
                   alt=""
                 />
               </a>
-              <img src="/divine-grace-unnn/instagram-logo-8869.png" alt="" />
+              <img src="/instagram-logo-8869.png" alt="" />
               <img
-                src="/divine-grace-unnn/twitter-x-blue-logo-round-20859.png"
+                src="/twitter-x-blue-logo-round-20859.png"
                 alt=""
               />
             </div>
