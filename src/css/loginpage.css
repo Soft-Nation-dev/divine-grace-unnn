@@ -1,5 +1,5 @@
 .login-bg {
-  background: url('/test-background-1.jpg') no-repeat center center/cover;
+  background: url('/test-background-2.jpg') no-repeat center center/cover;
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -19,8 +19,8 @@
   font-size: 15px;
   border: none;
   border-radius: 20px;
-  background-color: #012970;
-  color: white;
+  color: #000;
+  background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   backdrop-filter: blur(5px);
   transition: all 0.3s ease;
@@ -28,8 +28,8 @@
 
 .toggle-buttons button.active,
 .toggle-buttons button:hover {
-  background: rgba(255, 255, 255, 0.4);
-  color: #000;
+  background-color: #012970;
+  color: white;
 }
 
 .glass-form {
@@ -38,8 +38,8 @@
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px);
-  width: 90%;
-  max-width: 400px;
+  width: 95%;
+  max-width: 500px;
   text-align: center;
   color: white;
   animation: fadeIn 0.5s ease-in-out;
@@ -74,6 +74,12 @@
   background: rgba(255, 255, 255, 0.35);
 }
 
+.interation{
+  margin: o;
+  padding: 0;
+  font-size: 10px;
+}
+
 .signin-up-butt{
   padding: 12px;
   border: none;
@@ -98,5 +104,33 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+.error-text {
+  color: rgb(44, 31, 31);
+  font-size: 0.9rem;
+  margin-top: 8px;
+  text-align: center;
+  background-color: rgb(226, 216, 216);
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.pointer {
+  margin-left: 6px;
+  font-size: 20px;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
   }
 }

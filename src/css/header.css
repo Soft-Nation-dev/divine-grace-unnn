@@ -39,8 +39,8 @@
     right: 0;
     bottom: 0;
     top: 80px;
-    background: rgba(160, 180, 227, 0.6);
-    backdrop-filter: blur(20px) saturate(160%);
+    /* background: rgba(160, 180, 227, 0.6); */
+    backdrop-filter: blur(50px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     padding: 2rem 1.5rem;
     text-align: center;
@@ -60,8 +60,9 @@
     display: block;
     font-size: 1.2rem;
     font-weight: 500;
-    font-family: 'Federant', serif;
+    font-family: 'Agu Display', serif;
     color: #012970;
+    font-weight: bold;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     padding: 0.75rem 0;
     text-decoration: none;
@@ -74,8 +75,10 @@
 }
 
 .nav-section {
-    margin-top: 60px;
+    margin-top: 5px;
     border-top: 2px solid grey;
+     background: rgba(235, 238, 247, 0.6); 
+     padding-bottom: 15px;
 }
 
 .nav-div{
@@ -99,11 +102,16 @@
     font-family: "Federant", sans-serif;
 
 }
+.di{
+    display: flex;
+    justify-content: center;
+}
 
 .nav-link.active {
     color: #ffffff;
     background: rgba(147, 197, 253, 0.2);
     border-radius: 8px;
+    width: 400px;
     font-weight: 600;
     padding: 0.75rem 1rem;
     transition: all 0.3s ease;
@@ -145,7 +153,7 @@
     font-weight: 600;
     letter-spacing: 1px;
     position: relative;
-    top: -10px;
+    top: -8px;
     color: #012970;
     font-family: "Nunito", sans-serif;
 }
@@ -155,7 +163,7 @@
     font-weight: 600;
     letter-spacing: 1px;
     color: gray;
-    font-family: "Nunito", sans-serif;
+    font-family: "Federant", sans-serif;
 }
 
 #notification {
@@ -199,7 +207,15 @@
 
 
 
+@media screen and (max-width: 558px) {
+    .header-top {
+        padding: 0.8rem 0.3rem;
+    }
 
+    #digunec-logo {
+        top: -8px;
+    }
+}
 
 
 @media screen and (max-width: 546px) {
@@ -210,20 +226,20 @@
     }
 }
 
-@media screen and (max-width: 558px) {
-    .header-top{
-    padding: 0.8rem 0.3rem;
+@media screen and (max-width: 445px){
+    #dashboard{
+        font-size: 12px;
     }
-
-    #digunec-logo {
-            top: -8px;
-        }
-    #notification {
-        height: 15px;
+    #divider{
+        height: 25px;
+        margin-right: 10px;
+        margin-left: 30px;
     }
-
-    #profile-image {
-        height: 40px;
+    #logo-img{
+        height: 28px;
     }
-
+    #digunec-logo{
+        font-size: 15px;
+        top: -7px;
+    }
 }

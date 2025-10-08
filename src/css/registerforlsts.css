@@ -1,0 +1,473 @@
+#lstsh1 {
+    margin-top: 80px;
+    padding-top: 20px;
+    text-align: center;
+    font-family: "Agu Display", serif;
+}
+
+.lsts-main-content{
+    padding-bottom: 50px;
+}
+
+
+.form {
+    background-color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    max-width: 500px;
+    margin: auto;
+    width: 90%;
+} 
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    width: 100%;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #4b6cb7;
+    box-shadow: 0 4px 12px rgba(75, 108, 183, 0.4),
+        0 0 8px rgba(75, 108, 183, 0.3);
+    transform: translateY(-2px);
+} 
+
+.submit-button {
+
+    background-color: rgb(22, 22, 65);
+    color: bisque;
+    border: none;
+    padding: 10px 20px;
+    font-family: "Agu Display", serif;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.submit-button:hover {
+    background-color: #152536;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px);
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#receipt {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+    font-size: 16px;
+    box-sizing: border-box;
+    line-height: 1.6;
+    text-wrap: nowrap;
+}
+
+.receipt-container {
+    width: 98%;
+    height: 100%;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.9);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin: auto;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.receipt-container {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.receipt-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    object-fit: contain;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.receipt-container>*:not(.receipt-bg) {
+    position: relative;
+    z-index: 1;
+}
+
+.ticket-title {
+    text-align: center;
+}
+
+.align {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    align-items: center;
+    flex-direction: column;
+}
+
+.stamp {
+    height: 7px;
+    font-size: 12px;
+}
+
+.receipt-header {
+    text-align: center;
+    display: flex;
+    padding: 20px;
+    border-bottom: 2px solid rgb(246, 246, 248);
+    justify-content: center;
+    background-color: #c0cdf8;
+}
+
+.receipt-logo {
+    height: auto;
+    margin-bottom: 10px;
+    height: 30px;
+    position: relative;
+    top: 10px;
+    margin-right: 6px;
+}
+
+.church-name {
+    margin: 0;
+    font-size: 20px;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #012970;
+    font-family: "Nunito", sans-serif;
+}
+
+.receipt-title {
+    margin: 0;
+    font-size: 18px;
+    color: #555;
+}
+
+.receipt-divider {
+    border: 0;
+    border-top: 1px dashed #999;
+}
+
+.receipt-body {
+    font-size: 15px;
+    height: 100%;
+    padding: 20px;
+}
+
+.label {
+    font-weight: bold;
+    display: inline-block;
+    width: 140px;
+}
+
+.value {
+    font-style: normal;
+}
+
+.student-section {
+    margin-top: 10px;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg fill='black' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+} 
+
+.checkmark-cross {
+    stroke: #f44336;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 34;
+    stroke-dashoffset: 34;
+    animation: stroke 0.4s ease forwards;
+}
+
+.checkmark-circle.error {
+    stroke: #f44336;
+}
+
+@keyframes stroke {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+
+.result-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 15, 15, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2000;
+    color: #fff;
+    text-align: center;
+}
+
+.result-screen h2 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #22c55e;
+}
+
+.checkmark {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: inline-block;
+    stroke-width: 2;
+    stroke: #22c55e;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px #22c55e;
+    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    position: relative;
+}
+
+.checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 4;
+    stroke-miterlimit: 10;
+    stroke: #22c55e;
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke-width: 4;
+    stroke: #22c55e;
+    fill: none;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scale {
+
+    0%,
+    100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 60px #22c55e;
+    }
+}
+
+
+.receipt-card {
+    position: relative;
+    border: 2px solid #e0e0e0;
+    background: #fff;
+    border-radius: 12px;
+    /* background: rgba(255, 255, 255, 0.7); */
+    /* padding: 4px; */
+    /* margin-top: 5px; */
+    width: 95%;
+    max-width: 500px;
+    border: 2px solid #e0e0e0;
+    max-height: 100vh;
+    margin: 5px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    isolation: isolate;
+    /* overflow-y: auto; */
+    /* overflow-x: hidden; */
+    z-index: 0;
+}
+
+/* .receipt-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url('/web-app-manifest-512x512.png') no-repeat center center;
+    background-size: 150% 200%;
+    filter: blur(10px);
+    z-index: -1;
+} */
+
+.receipt-content {
+    position: relative;
+    z-index: 1;
+    padding: 10px;
+    text-align: center;
+}
+
+.receipt-overlay {
+  position: fixed;
+  top: 20PX; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 1000;
+  margin: 5px auto;
+  overflow-y: auto;
+}
+
+.receipt-wrapper {
+  position: relative;
+  background: white;
+  margin: 5px auto;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 10px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+
+.receipt-header {
+    border-bottom: 1px solid #ddd;
+    margin: 0;
+    padding: 3px;
+    height: 80px;
+    /* margin-bottom: 15px; */
+}
+
+.receipt-header h3{
+    color: blue;
+    font-family: "Agu Display", sans-serif;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.receipt-header p{
+    font-style: italic;
+}
+
+.receipt-logo {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 10px;
+    top: 12PX;
+}
+
+.receipt-subtitle {
+    font-size: 11px;
+    color: #666;
+    margin: 0;
+}
+
+.receipt-body {
+    text-align: center;
+    color: black;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 0;
+}
+
+.receipt-footer {
+    margin-top: 20px;
+    padding-bottom: 0px;
+}
+
+.generate-btn {
+    background: #02e60a;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.generate-btn:hover {
+    background: #45a049;
+}
+
+
+
+
+
+
+@media (max-width: 600px) {
+    .form {
+        width: 95%;
+    }
+    .receipt-wrapper {
+        width: 98%;
+        padding: 4px;
+    }
+
+    .receipt-card {
+        width: 99%;
+        padding: 2px;
+    }
+}

@@ -17,27 +17,27 @@
 }
 
 .logo-img{
-    height: 37px;
+    height: 30px;
     position: relative;
     top: 6px;
     margin-right: 6px;
 }
 
 .digunec{
-    font-size: 21px;
+    font-size: 15px;
     font-weight: 600;
     letter-spacing: 1px;
     color: #012970;
     font-family: "Nunito", sans-serif;
     position: relative;
-    top: -3px;
+    top: -2px;
 }
 
 .login-button {
     background-color: #012970;
     color: white;
     border: none;
-    padding: 20px 25px;
+    padding: 17px 19px;
 }
 
 .buger-div {
@@ -50,10 +50,15 @@
     height: 30px;
 }
 
+.divv{
+    margin-top: 80px;
+    text-align: center;
+}
+
 .hero-container {
     width: 100%;
     height: 70vh;
-    margin-top: 79px;
+    margin-top: 10px;
     overflow: hidden;
 }
 
@@ -81,38 +86,61 @@
 
 .welcome-section{
     text-align: center;
-    background-color: #dfdfe0;
-    padding: 10px;
-    border-bottom-left-radius:10px;
+    margin-top: 10px;
+    /* background-color: #dfdfe0; */
+    /* background-color: #e9eaee; */
+    letter-spacing: 1px;
+    padding-top: 8px;
+    /* margin: 8px; */
+    border-radius:10px;
+}
+
+.welcome-about{
+    margin: 8px;
+    border-radius: 30px;
+    padding: 0;
+     background-color: #e9eaee; 
 }
 
 .welcome{
-    font-family: 'Federant',serif;
+    /* font-family: 'Agu Display',serif; */
+    font-family: "Bebas Neue", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     color: #012970;
     margin-bottom: 5px;
+    font-size: 44px;
 
 }
-.largest, .motto{
-    font-size: 14px;
+.largest{
+    font-size: 10px;
+    font-style: italic;
+    font-family: "Agu Display", sans-serif;
     color: rgb(136, 135, 135);
 }
 
-.motto{
+
+#motto{
+    font-style: italic;
     margin: 0;
+    font-size: 14px;
+    color: rgb(136, 135, 135);
 }
 
 .about{
     color: rgb(68, 68, 68);
     font-family: "Open Sans", sans-serif;
     font-size: 16px;
-    font-weight: 600;
-    padding: 10px;
+    text-align: center;
+    line-height: 23px;
     margin-top: 6px;
+    padding: 3px;
 }
 
-.about-div{
+.pad{
+    padding: 5px;
 
-}
+} 
 
 .first-image{
     width: 96%;
@@ -120,11 +148,12 @@
 
 .first-image-div{
     margin: 10px;
+    text-align: center;
 }
 
 .who {
     text-align: center;
-    font-family: "federant", sans-serif;
+    font-family: "Agu Display", sans-serif;
     font-size: 25px;
     line-height: 35px;
     font-weight: 700;
@@ -135,19 +164,19 @@
 
 .value-p{
     font-size: 25px;
-        font-family: "FEDERANT", sans-serif;
-        font-weight: 700;
-        color: #4154f1;
-        text-align: center;
-        margin-top: 30px;
-        margin-bottom: 0;
+    font-family: "Agu Display", sans-serif;
+    font-weight: 700;
+    color: #4154f1;
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 0;
 
 }
 
 .knownfor-p {
     text-align: center;
-    font-family: "Open Sans", sans-serif;
-    font-size: 20px;
+    font-family: "Federant", sans-serif;
+    font-size: 18px;
     font-weight: 700;
     color: #012970;
     margin-bottom: 10px;
@@ -156,17 +185,14 @@
 .ourvalue-grid {
     display: grid;
     justify-content: center;
-    grid-template-columns: 1fr;
-    margin-top: 50px;
-    padding: 5px;
-    margin-top: 20px;
+    grid-template-columns: 1fr 1fr;
     column-gap: 30px;
 
 }
 
 .colour-grid {
     background-color: #dcdfe9;
-    padding: 30px;
+    padding: 15px;
     border-radius: 50px;
     margin: 5px;
     transition-duration: 0.5s;
@@ -196,7 +222,8 @@
 
 .soul-p,
 .vision-p {
-    font-size: 18px;
+    font-size: 25px;
+    font-family: "Agu Display", sans-serif;
     color: #012970;
     font-weight: 700;
     text-align: center;
@@ -206,8 +233,9 @@
 .visionwriteup-p {
     color: rgb(68, 68, 68);
     font-family: "Open Sans", sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 400;
+    line-height: 20px;
     text-align: center;
 }
 
@@ -216,8 +244,8 @@
 }
 
 .Service {
-    font-size: 20px;
-    font-family: "federant", sans-serif;
+    font-size: 25px;
+    font-family: "Agu Display", sans-serif;
     font-weight: 700;
     color: #4154f1;
     text-align: center;
@@ -235,7 +263,7 @@
 .Service-time p {
     color: rgb(68, 68, 68);
     font-family: "Open Sans", sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     line-height: 20px;
     text-align: center;
@@ -272,6 +300,8 @@
 
 .lsts-anchor {
     text-decoration: none;
+    font-style: italic;
+    font-family: Federant, sans-serif;
 }
 
 .lsts-anchor:hover {
@@ -296,12 +326,12 @@ footer {
 
 .social-div img {
     margin: 2px;
-    width: 20px;
+    width: 15px;
 }
 
 .copyright-div {
     text-align: center;
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 30px;
     color: rgb(68, 68, 68);
 }
@@ -312,9 +342,19 @@ footer {
 
 
 
-@media screen and (min-width: 750px) {
-    
-    .ourvalue-grid {
-            grid-template-columns: 1fr 1fr;
+ @media (min-width:600px) {
+    .logo-img {
+            height: 30px;
         }
+    .digunec {
+            font-size: 15px;
+        } }
+
+@media (max-width:600px) {
+    
+    .ourvalue-grid{
+            grid-template-columns: 1fr;
+        }
+        
 }
+
