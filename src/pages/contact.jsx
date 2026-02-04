@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "../components/header";
 import LoadingOverlay from "../components/overlay";
-import "../css/contact.css";
+import "../images/css/contact.css";
 import { motion } from "framer-motion";
 import {
   FaFacebookF,
@@ -34,8 +34,6 @@ export default function Contact() {
 
     setLoading(true);
     setOverlayText("Sending...");
-    console.log(formData);
-
     setTimeout(() => {
       setOverlayText("Loading...");
     }, 2000);

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "../components/header";
 import LoadingOverlay from "../components/overlay";
-import "../css/surmit.css";
+import "../images/css/surmit.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Logo from "/web-app-manifest-512x512.png";
@@ -10,6 +10,7 @@ import First from "../images/lsts-training-lsta1.jpg";
 import Second from "../images/third image.jpg";
 import { FaCalendarAlt, FaBookOpen, FaUsers } from "react-icons/fa";
 import { LuLightbulb } from "react-icons/lu";
+import { fetchWithAuth, API_ENDPOINTS, getAuthToken } from "../config/api";
 
 export default function SummitRegistrationForm() {
   const [summitStudent, setSummitStudentStatus] = useState("");
@@ -84,7 +85,7 @@ export default function SummitRegistrationForm() {
       return;
     }
 
-    const token = sessionStorage.getItem("authToken");
+    const token = getAuthToken();
     if (!token) {
       setSummitSubmissionStatus("error");
       setSummitSubmissionText("Unauthorized — please log in.");
@@ -94,40 +95,30 @@ export default function SummitRegistrationForm() {
     setSummitLoading(true);
     try {
       const payload = {
-        Title: summitFormData.summitTitle,
-        Surname: summitFormData.summitSurname,
-        OtherNames: summitFormData.summitOtherNames,
-        PhoneNumber: summitFormData.summitPhoneNumber,
-        Email: summitFormData.summitEmail,
-        ResidentialAddress: summitFormData.summitResidentialAddress,
-        Gender: summitFormData.summitGender,
-        Baptized: summitFormData.summitBaptized,
-        DepartmentInChurch: summitFormData.summitDepartmentInChurch.join(", "),
-        PositionInChurch: summitFormData.summitPositionInChurch,
-        Student: summitFormData.summitStudent,
-        Vision: summitFormData.summitVisionGoals,
+        title: summitFormData.summitTitle,
+        surname: summitFormData.summitSurname,
+        other_names: summitFormData.summitOtherNames,
+        phone_number: summitFormData.summitPhoneNumber,
+        email: summitFormData.summitEmail,
+        residential_address: summitFormData.summitResidentialAddress,
+        gender: summitFormData.summitGender,
+        is_student: summitFormData.summitStudent === "Yes",
+        expectations: summitFormData.summitVisionGoals,
         ...(summitFormData.summitStudent === "Yes"
           ? {
-              DepartmentInSchool: summitFormData.summitDepartmentInSchool,
-              Level: parseInt(summitFormData.summitLevel) || 0,
+              department_in_school: summitFormData.summitDepartmentInSchool,
+              level: summitFormData.summitLevel,
             }
           : {
-              DepartmentInSchool: "",
-              Level: 0,
+              department_in_school: "",
+              level: "",
             }),
       };
 
-      const res = await fetch(
-        "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/Summit/submit",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetchWithAuth(API_ENDPOINTS.POST_SUMMIT, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
@@ -332,10 +323,10 @@ export default function SummitRegistrationForm() {
             {!summitSubmissionStatus && (
               <>
                 <div id="summit-h1">
-                  <h1>Summit Registration Form</h1>
+                  <h1 className="gh">Summit Registration Form</h1>
                 </div>
 
-                <form className="summit-form" onSubmit={handleSummitSubmit}>
+                {/* <form className="summit-form" onSubmit={handleSummitSubmit}>
                   <label>Title</label>
                   <select
                     name="summitTitle"
@@ -535,7 +526,10 @@ export default function SummitRegistrationForm() {
                       {summitLoading ? "Submitting..." : "Submit"}
                     </button>
                   </div>
-                </form>
+                </form> */}
+                    <p className="temp">Thank you for your interest. Registration for the Leadership Summit
+                      is closed. Additional
+                      information will be provided as it becomes available. </p>
               </>
             )}
           </>

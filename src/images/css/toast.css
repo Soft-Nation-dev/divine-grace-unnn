@@ -1,0 +1,36 @@
+/* src/css/toast.css */
+.toast-wrapper {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+}
+
+.toast {
+    min-width: 180px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    opacity: 0.98;
+}
+
+.toast.success {
+    background: #16a34a;
+}
+
+.toast.error {
+    background: #ef4444;
+}
+
+.toast.info {
+    background: #0284c7;
+}
+
+.toast.warning {
+    background: #f59e0b;
+}

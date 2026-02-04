@@ -5,8 +5,10 @@
     font-family: "Agu Display", serif;
 }
 
-.summit-main-content {
-    /* padding-bottom: 50px; */
+.temp{
+    padding-bottom: 100%;
+    text-align: center;
+    font-size: 16px;
 }
 
 .summit-landing-section {
@@ -26,6 +28,10 @@
     color: #012970;
     margin-bottom: 0;
     font-size: 28px;
+}
+
+.gh{
+    font-size: 23px;
 }
 
 .imgg {
@@ -89,28 +95,6 @@
     transform: scale(1.05);
     box-shadow: 0 3px 6px rgba(0, 70, 255, 0.4);
 }
-
-.summit-dept-button:hover {
-    /* background-color: #dbe4ff; */
-    transform: scale(1.03);
-}
-
-.summit-dept-button:nth-child(odd) {
-    transform: rotate(-2deg);
-}
-
-.summit-dept-button:nth-child(even) {
-    transform: rotate(2deg);
-}
-
-.summit-dept-button:nth-child(3n) {
-    transform: rotate(-1deg);
-}
-
-.summit-dept-button:nth-child(5n) {
-    transform: rotate(1deg);
-}
-
 
 
 .summit-form {

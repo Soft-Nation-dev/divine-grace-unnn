@@ -1,5 +1,5 @@
-import '../css/header.css';
-import '../css/landingpage.css';
+import '../images/css/header.css';
+import '../images/css/landingpage.css';
 import Logo from '../images/logo.png';
 import FacebookLogo from "../images/facebook-logo-2428.png";
 import InstagramLogo from "../images/instagram-logo-8869.png";

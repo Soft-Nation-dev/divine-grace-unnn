@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import Header from "../components/header";
-import "../css/messages.css";
+import "../images/css/messages.css";
 import LoadingOverlay from "../components/overlay";
+import { fetchWithAuth, API_ENDPOINTS, getAuthToken } from "../config/api";
+import API_BASE_URL from "../config/api";
+// import { fetchWithAuth, API_ENDPOINTS, getAuthToken } from "../config/api";
+// import API_BASE_URL from "../config/api";
 
 export default function MessagesSection() {
   const [activeCategory, setActiveCategory] = useState("sunday");
@@ -14,15 +18,12 @@ export default function MessagesSection() {
   const midweekRef = useRef(null);
   const lstsRef = useRef(null);
 
-  const baseUrl =
-    "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/AudioMessage";
-  const downloadBase = `${baseUrl}/download`;
-
   const audioSrcFor = (msg) => {
     if (!msg) return "";
+    if (msg.file_url?.startsWith("http")) return msg.file_url;
     if (msg.filePath?.startsWith("http")) return msg.filePath;
     if (msg.audioUrl?.startsWith("http")) return msg.audioUrl;
-    return `https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/${msg.filePath}`.replace(
+    return `${API_BASE_URL}/${msg.file_url || msg.filePath}`.replace(
       /([^:]\/)\/+/g,
       "$1"
     );
@@ -34,12 +35,7 @@ export default function MessagesSection() {
       setFetchError("");
 
       try {
-        const token = sessionStorage.getItem("authToken");
-        const headers = token
-          ? { Authorization: `Bearer ${token}`, Accept: "application/json" }
-          : { Accept: "application/json" };
-
-        const res = await fetch(baseUrl, { method: "GET", headers });
+        const res = await fetchWithAuth(API_ENDPOINTS.GET_PUBLIC_MESSAGES);
 
         if (!res.ok) {
           const text = await res.text().catch(() => "");
@@ -52,11 +48,11 @@ export default function MessagesSection() {
         const data = await res.json();
         console.log("Fetched messages:", data);
 
-        const sorted = Array.isArray(data)
-          ? data.sort(
+        const sorted = Array.isArray(data.data || data)
+          ? (data.data || data).sort(
               (a, b) =>
-                new Date(b.date || b.createdAt) -
-                new Date(a.date || a.createdAt)
+                new Date(b.date || b.created_at || b.createdAt) -
+                new Date(a.date || a.created_at || a.createdAt)
             )
           : [];
 
@@ -140,7 +136,7 @@ export default function MessagesSection() {
   };
 
   const handleFetchedDownload = async (id, filename) => {
-  const token = sessionStorage.getItem("authToken");
+  const token = getAuthToken();
   if (!token) {
     setFetchError("Please log in first to download messages.");
     return;
@@ -150,10 +146,7 @@ export default function MessagesSection() {
   setFetchError("");
 
   try {
-    const res = await fetch(`${downloadBase}/${id}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetchWithAuth(`${API_ENDPOINTS.DELETE_MESSAGE(id).replace('/messages/', '/messages/download/')}`);
 
     if (!res.ok) {
       let msg = `Download failed (${res.status})`;

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/header";
-import '../css/about.css';
+import '../images/css/about.css';
 import Japhat from "../images/test-background-2.jpg"
 export default function About() {
     return (

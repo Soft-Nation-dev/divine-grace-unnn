@@ -1,10 +1,10 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { useNavigate, Link} from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Logo from '../images/logo.png';
-import '../css/landingpage.css';
+import '../images/css/landingpage.css';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -13,8 +13,12 @@ export default function LandingPage() {
     AOS.init({ duration: 2000 });
   }, []);
 
+const [videoLoaded, setVideoLoaded] = useState(false);
+const [overlayLoaded, setOverlayLoaded] = useState(false);
+    
+
   const handleLoginClick = () => {
-    navigate('/login'); 
+    navigate('/login', { state: { initialTab: 'login' } });
   };
 
   return (
@@ -24,7 +28,7 @@ export default function LandingPage() {
             <div className="add">
                 <img className="logo-img" src={Logo} alt="" />
                 <span className="digunec">
-                    DIVINE GRACE UNN CAMPUS
+                    DIGUNN
                 </span>
             </div>
               <button className="login-button js-login-button"  onClick={handleLoginClick}>LOG IN</button>
@@ -33,31 +37,35 @@ export default function LandingPage() {
           <div data-aos="fade-up" className='divv'>
               <h1 className='welcome'>WELCOME TO DIVINE GRACE UNN CAMPUS <span className='largest'> the largest </span></h1>
         <p id='motto'>Motto: I can do all things through christ that strengthens me</p>
-      <section data-aos="slide-up" className='welcome-section'>
-        <div>
-           <div className="welcome-about">
-              <p className='about'>
-                Welcome to Divine Grace UNN Campus&#44; a vibrant community of faith and fellowship located within the University of Nigeria&#44; Nsukka.
-              We are delighted to have you in our online space where faith, 
-              fellowship, and love converge. At Divine Grace UNN Campus,
-               you're not just attending a service, you’re joining a family which is bound by faith in Christ and a shared
-               commitment to live out His teachings. Whether you are a first-time visitor,
-               a returning friend, or a long-time member of our congregation, we extend to you a warm and heartfelt welcome.
-
-                </p>
-          </div>
-
+            
+        <section data-aos="slide-up" className='welcome-section'>
           <div data-aos="fade-up" className="hero-container">
-      <video className="hero-video" autoPlay muted loop playsInline>
-        <source src="/media/background-video.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-      <div className="hero-overlay">
-        <img className='overlay-img' src="/logo.png" alt="" />
-      </div>
-      </div>
-       </div>
-      </section>
+            {!videoLoaded && <div className="media-placeholder">Loading video…</div>}
+
+            <video
+              className="hero-video"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster="/logo.png"
+              onCanPlayThrough={() => setVideoLoaded(true)}
+              style={{ display: videoLoaded ? 'block' : 'none' }}
+            >
+              <source src="/media/back-try.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <div className="hero-overlay" style={{ display: overlayLoaded ? 'block' : 'none' }}>
+              <img
+                className='overlay-img'
+                src="/logo.png"
+                alt=""
+                onLoad={() => setOverlayLoaded(true)}
+              />
+            </div>
+          </div>
+        </section>
           </div>
 
          <div data-aos="fade-up" className="who">WHO WE ARE</div>
@@ -82,7 +90,7 @@ export default function LandingPage() {
         <div data-aos="fade-up" className="ourvalue-grid">
             <div className="colour-grid">
                 <div className="snappic1-div" >
-                    <img src="/soul.jpg" alt="" className="snappic1"/>
+                    <img src="/soul.jpg" alt="" loading="lazy" className="snappic1"/>
                 </div>
                 <div>
                     <p className="soul-p">Soul Winning</p>
@@ -93,7 +101,7 @@ export default function LandingPage() {
                   </div>
                     <div className="colour-grid">
                 <div className="snappic1-div">
-                    <img src="/word1.jpg" alt="" className="snappic2"/>
+                    <img src="/word1.jpg" alt="" loading="lazy" className="snappic2"/>
                 </div>
                 <div>
                     <p className="vision-p">Rightfully dividing the word of God</p>
@@ -107,7 +115,7 @@ export default function LandingPage() {
         <div data-aos="fade-up" className="ourvalue-grid">
             <div className="colour-grid">
                 <div className="snappic1-div" >
-                    <img src="/prayer.jpg" alt="" className="snappic1"/>
+                    <img src="/prayer-m.jpg" alt="" loading="lazy" className="snappic1"/>
                 </div>
                 <div>
                     <p className="soul-p">Prayer</p>
@@ -119,7 +127,7 @@ export default function LandingPage() {
             </div>
           <div className="colour-grid">
                 <div className="snappic1-div">
-                    <img src="/leaders.jpg" alt="" className="snappic2"/>
+                    <img src="/leader-m.jpg" alt="" loading="lazy" className="snappic2"/>
                 </div>
                 <div>
                     <p className="vision-p">Vision </p>
@@ -134,50 +142,50 @@ export default function LandingPage() {
     <div className="Service">SERVICES</div>
     <div className="Service-time">
         Tuesday (Mid-week Service) <br/> Time <img src="/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
+     <div>
+            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" loading="lazy" className="time-image"/>: Grace Nation ( Marlima Upstairs )
+        </div>
         </div>
                   
-     <div className="Service-time">
-            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation ( Marlima Upstairs )
-        </div>
     <div className="Service-time">
         Friday (LSTS)
-        <Link className="lsts-anchor"  to="/login">Click To Register</Link> <br/>Time <img src="/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
+        <Link className="lsts-anchor"  to="/login"  state={{ initialTab: 'register' }}>Click To Register</Link> <br/>Time <img src="/pngaaa.com-473864.png" alt="" className="time-image"/>: 5:00pm
+      <div>
+            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" loading="lazy" className="time-image"/>: Grace Nation ( Benima )
+        </div>
     </div>
     
-      <div className="Service-time">
-            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation ( Benima )
-        </div>
 
     <div className="Service-time">
                       Sunday Service- <br /> Time: <br />
-                      <img src="/pngaaa.com-473864.png" alt="" className="time-image" />: 8:00am - 9am ( First Service )<br/>
-                      <img src="/pngaaa.com-473864.png" alt="" className="time-image" />: 9:00am - 11am ( Second Service )
+                      <img src="/pngaaa.com-473864.png" alt="" loading="lazy" className="time-image" />: 8:00am - 9am ( First Service )<br/>
+                      <img src="/pngaaa.com-473864.png" alt="" loading="lazy" className="time-image" />: 9:00am - 11am ( Second Service )
         
-    </div>
-    <div>
-        <div className="Service-time">
-            Venue<img src="/Location_icon_from_Noun_Project.png" alt="" className="time-image"/>: Grace Nation (Marlima Upstairs)
+        <div>
+            Venue<img  src="/Location_icon_from_Noun_Project.png" alt="" loading="lazy" className="time-image"/>: Grace Nation (Marlima Upstairs)
         </div>
     </div>
-    <div className="Service-time">
-        <p className="callus">For more enquires call us <img src="/kisspng-computer-icons-telephone-call-5af1f6d96f06b6.4041455015258068094548.png" alt="" className="time-image"/></p>
-       <p className="callus">+2347065274878 <br/>+2348162650708 
-           <br/>+2347041629192 <br/>+2347034207220 <br/> Email: info@divinegraceunn.com.ng</p>
+    <div>
     </div>
 </div>
 </section>
+    <div className="Service-time white">
+        <p className="callus">For more enquires call us <img src="/kisspng-computer-icons-telephone-call-5af1f6d96f06b6.4041455015258068094548.png" alt="" loading="lazy" className="time-image"/></p>
+       <p className="callus">+2347065274878 <br/>+2348162650708 
+           <br/>+2347041629192 <br/>+2347034207220 <br/> Email: info@divinegraceunn.com.ng</p>
+    </div>
     <footer className="footer">
               <div className='foot'>
                   <div className="footer-logo">
-            <img className="logo-img" src="/logo.png" alt=""/>
+            <img className="logo-img" loading="lazy" src="/logo.png" alt=""/>
             <span className="digunec">
                 DIGUNN
             </span>
         </div>
         <div className="social-div">
             <a target='blanc' href="https://web.facebook.com/p/Divine-Grace-UNN-Campus-61551659589725/?_rdc=1&_rdr#"><img src="/facebook-logo-2428.png" alt=""/></a>
-            <img src="/instagram-logo-8869.png" alt=""/>
-            <img src="/twitter-x-blue-logo-round-20859.png" alt=""/>
+           <a target='blanc' href="https://www.instagram.com/divinegraceunncampus?igsh=ZHI5ejkwN3J4cWtm"> <img src="/instagram-logo-8869.png" alt=""/></a>
+         <a target='blanc' href="https://youtube.com/@divinegraceunncampus6965?si=sYMnHH89gVZrYQ7R"><img id='oipp' src="/OIPP.png" alt=""/></a>
         </div>
         <div className="copyright-div">
             <p className="copyright">&copy;copyright <b>DIGUNN</b>&#46; All right reserved</p>

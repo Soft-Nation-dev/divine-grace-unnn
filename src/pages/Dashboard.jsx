@@ -1,40 +1,45 @@
 import React, { useEffect, useState } from "react";
-import "../css/homepage.css";
+import "../images/css/homepage.css";
 import Header from "../components/header";
 import announcementImg from "../images/annocement_image-removebg-preview.png";
 import Typewriter from "typewriter-effect";
 import { useNavigate } from "react-router-dom";
+import { fetchWithAuth, API_ENDPOINTS } from "../config/api";
 
 export default function Dashboard() {
   
   const navigate = useNavigate();
 
-  const [userDisplay, setUserDisplay] = useState("Welcome back Soft Nation");
+  const [userDisplay, setUserDisplay] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = sessionStorage.getItem("authToken");
-        const res = await fetch(
-          "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await fetchWithAuth(API_ENDPOINTS.PROFILE);
 
         if (!res.ok) throw new Error("Failed to fetch profile");
 
         const data = await res.json();
 
-        const fullName = data.fullName || "";
+        const profile = data.user || data;
+        const fullName =
+          profile.full_name ||
+          profile.display_name ||
+          profile["Display name "] ||
+          profile.fullName ||
+          "";
+        const title = profile.title || "";
+        
         const nameParts = fullName.trim().split(" ");
-        const middleName =
-          nameParts.length >= 3 ? nameParts.slice(1, -1).join(" ") : fullName;
-
-        const title = data.title || "";
-        setUserDisplay(title ? `${title} ${middleName}` : middleName);
+        let middleName = fullName;
+        if (nameParts.length >= 3) {
+          middleName = nameParts.slice(1, -1).join(" ");
+        } else if (nameParts.length === 2) {
+          middleName = nameParts[0];
+        }
+        
+        const displayName = title ? `${title} ${middleName}`.trim() : middleName;
+        setUserDisplay(displayName);
       } catch (err) {
         console.error("Profile fetch error:", err);
       }
@@ -68,6 +73,11 @@ export default function Dashboard() {
         </div>
 
         <div className="cards-grid">
+          <Card
+            title="Click the button below to register for lsts, Registration is free. Come along with your registartion recept"
+            action="Register for LSTS"
+            onClick={() => navigate("/registerforlsts")}
+          />
           <Card
             title="Do you have a prayer request? Click the button below to submit a prayer request"
             action="Submit a prayer request"

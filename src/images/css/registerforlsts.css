@@ -6,7 +6,7 @@
 }
 
 .lsts-main-content{
-    /* padding-bottom: 50px; */
+    padding-bottom: 10px;
     /* text-align: center; */
 }
 .lsts-landing-section{
@@ -152,7 +152,11 @@
     font-size: 28px;
     margin-bottom: 0;
 }
-
+.ready{
+    font-size: 20px;
+    font-family: "Agu Display", serif;
+    color: #012970;
+}
 
 
 
@@ -209,15 +213,14 @@ select:focus {
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
-    margin: 20px 0;
-    position: relative;
+    margin: 10px 0;
 }
 
 .dept-button {
     background-color: #f0f0f5;
     border: 1px solid #ccc;
     border-radius: 20px;
-    padding: 8px 16px;
+    padding: 5px;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -235,22 +238,6 @@ select:focus {
 
 .dept-button:hover {
     transform: scale(1.03);
-}
-
-.dept-button:nth-child(odd) {
-    transform: rotate(-2deg);
-}
-
-.dept-button:nth-child(even) {
-    transform: rotate(2deg);
-}
-
-.dept-button:nth-child(3n) {
-    transform: rotate(-1deg);
-}
-
-.dept-button:nth-child(5n) {
-    transform: rotate(1deg);
 }
 
 .submit-button {
@@ -682,6 +669,12 @@ select {
     padding: 0;
 }
 
+.verifying-badge {
+    margin-top: 8px;
+    color: #0b63ff;
+    font-weight: 600;
+}
+
 .receipt-footer {
     margin-top: 20px;
     padding-bottom: 0px;
@@ -700,7 +693,58 @@ select {
     background: #45a049;
 }
 
+.receipt-card {
+    position: relative;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 680px;
+    margin: 8px auto;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+    box-shadow: 0 8px 20px rgba(2, 6, 23, 0.08);
+    overflow: hidden;
+}
 
+.receipt-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.receipt-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+}
+
+.receipt-content {
+    padding: 12px 16px;
+    text-align: left;
+}
+
+.receipt-title {
+    font-size: 18px;
+    color: #012970;
+    font-weight: 700;
+}
+
+.generate-btn {
+    background: linear-gradient(90deg, #10b981, #06b6d4);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+}
+
+.download-btn {
+    background: #0b63ff;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
 
 @media (min-width: 600px){
     .lstsf-h1 {

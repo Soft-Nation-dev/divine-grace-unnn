@@ -1,6 +1,6 @@
 // src/components/LoadingOverlay.jsx
 import React from 'react';
-import '../css/overlay.css';
+import '../images/css/overlay.css';
 import ChurchLogo from '/logo.png';
 
 export default function LoadingOverlay({ text }) {

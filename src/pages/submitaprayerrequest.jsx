@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Header from "../components/header";
 import LoadingOverlay from "../components/overlay";
-import "../css/prayer.css";
+import "../images/css/prayer.css";
+import { fetchWithAuth, API_ENDPOINTS, getAuthToken } from "../config/api";
 
 export default function SubmitPrayerRequest() {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ export default function SubmitPrayerRequest() {
   const handleSubmit = async () => {
     setSubmissionStatus(null);
 
-    const token = sessionStorage.getItem("authToken");
+    const token = getAuthToken();
     if (!token) {
       setSubmissionStatus("error");
       setSubmissionText("Unauthorized — please log in.");
@@ -25,22 +26,17 @@ export default function SubmitPrayerRequest() {
       return;
     }
 
-      setLoading(true);
-      console.log("Submitting prayer request:", JSON.stringify({ PrayerRequest: prayerText }));
-
-
+    setLoading(true);
+    
     try {
-      const res = await fetch(
-        "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/PrayerRequest/Submit",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ PrayerRequest: prayerText }),
-        }
-      );
+      const res = await fetchWithAuth(API_ENDPOINTS.POST_PRAYER, {
+        method: "POST",
+        body: JSON.stringify({ 
+          name: "User", 
+          email: "user@example.com",
+          prayer_request: prayerText 
+        }),
+      });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -48,8 +44,7 @@ export default function SubmitPrayerRequest() {
           typeof errData === "string"
             ? errData
             : errData?.message ||
-              errData?.errors ||
-              JSON.stringify(errData) ||
+              errData?.error ||
               `Failed to submit prayer (status ${res.status})`;
 
         setSubmissionStatus("error");

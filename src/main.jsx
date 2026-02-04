@@ -2,16 +2,19 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { HashRouter } from 'react-router-dom';
+import Toast from './components/Toast';
 
-import './css/landingpage.css';
-import './css/global.css';
-import './css/loginpage.css';
-import './css/homepage.css';
+import './images/css/landingpage.css';
+import './images/css/global.css';
+import './images/css/loginpage.css';
+import './images/css/homepage.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+     <Toast>
     <HashRouter >
       <App />
     </HashRouter>
+  </Toast>
   </React.StrictMode>
 );

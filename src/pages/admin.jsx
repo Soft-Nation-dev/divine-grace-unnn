@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import Header from "../components/header";
 import { useNavigate } from "react-router-dom";
-import "../css/admin.css";
+import "../images/css/admin.css";
 import LoadingOverlay from "../components/overlay";
+import { fetchWithAuth, API_ENDPOINTS, getAuthToken } from "../config/api";
+import API_BASE_URL from "../config/api";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("lsts-section");
@@ -17,8 +19,12 @@ export default function Admin() {
   const [adminEmail, setAdminEmail] = useState("");
   const [assignStatus, setAssignStatus] = useState("");
   const [checkingAdmin, setCheckingAdmin] = useState(true);
+  const [assigningAdmin, setAssigningAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(null);
   const [statusMessage, setStatusMessage] = useState("Checking admin status...");
+  const [exporting, setExporting] = useState(false);
+  const [exportingText, setExportingText] = useState("");
+
 
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadCategory, setUploadCategory] = useState("Sunday");
@@ -26,47 +32,20 @@ export default function Admin() {
   const [uploadDate, setUploadDate] = useState("");
   const [uploadFile, setUploadFile] = useState(null);
   const [showAllLsts, setShowAllLsts] = useState(false);
+  const [weeklyLstsData, setWeeklyLstsData] = useState([]);
 
   const prayersRef = useRef(null);
   const lstsRef = useRef(null);
   const summitsRef = useRef(null);
   const navigate = useNavigate();
 
-  const endpoints = {
-    prayers:
-      "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/PrayerRequest/GetPrayers",
-    lsts:
-      "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/LstsForm/USERLSTSFORM",
-    summits:
-      "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/Summit/SummitForm",
-    upload:
-      "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/AudioMessage",
-    assignAdmin:
-      "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/Admin/isAdmin",
-    makeadmin:
-      "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/api/Admin/assign-admin"
-  };
-
   const getToken = () => {
-    const t = sessionStorage.getItem("authToken");
+    const t = getAuthToken();
     if (!t) {
       setError("You must be logged in to view admin data.");
       return null;
     }
     return t;
-  };
-
-  const fetchWithAuth = async (url) => {
-    const token = getToken();
-    if (!token) throw new Error("No auth token");
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(txt || `Fetch failed (${res.status})`);
-    }
-    return res.json();
   };
 
   useEffect(() => {
@@ -76,12 +55,10 @@ export default function Admin() {
       try {
         const token = getToken();
         if (!token) throw new Error("Not logged in");
-        const res = await fetch(endpoints.assignAdmin, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetchWithAuth(API_ENDPOINTS.CHECK_ADMIN);
         const data = await res.json();
 
-        if (data) {
+        if (data.isAdmin || data.is_admin) {
           setIsAdmin(true);
           setStatusMessage("✅ Admin confirmed! Loading dashboard...");
           setTimeout(() => {
@@ -116,16 +93,35 @@ export default function Admin() {
           setLoading(false);
           return;
         }
-        const [prayerData, lstsData, summitsData] = await Promise.all([
-          fetchWithAuth(endpoints.prayers),
-          fetchWithAuth(endpoints.lsts),
-          fetchWithAuth(endpoints.summits),
+        const [prayersRes, lstsRes, weeklyLstsRes, summitsRes] = await Promise.all([
+          fetchWithAuth(API_ENDPOINTS.GET_PRAYERS),
+          fetchWithAuth(API_ENDPOINTS.GET_LSTS),
+          fetchWithAuth(API_ENDPOINTS.GET_LSTS_WEEKLY),
+          fetchWithAuth(API_ENDPOINTS.GET_SUMMIT),
         ]);
+        
+        const prayerData = await prayersRes.json();
+        const lstsData = await lstsRes.json();
+        const weeklyLstsDataRes = await weeklyLstsRes.json();
+        const summitsData = await summitsRes.json();
+        
+        setPrayers(Array.isArray(prayerData.data || prayerData) ? (prayerData.data || prayerData) : []);
+        setLsts(
+          Array.isArray(lstsData.registrations || lstsData.data || lstsData)
+            ? (lstsData.registrations || lstsData.data || lstsData).sort((a, b) => {
+                const da = new Date(a.submitted_at || a.submittedAt || a.submissionDate || a.createdAt || a.date);
+                const db = new Date(b.submitted_at || b.submittedAt || b.submissionDate || b.createdAt || b.date);
+                return da - db;
+              })
+            : []
+          );
+        setWeeklyLstsData(
+          Array.isArray(weeklyLstsDataRes.registrations || weeklyLstsDataRes.data || weeklyLstsDataRes)
+            ? (weeklyLstsDataRes.registrations || weeklyLstsDataRes.data || weeklyLstsDataRes)
+            : []
+        );
 
-        setPrayers(Array.isArray(prayerData) ? prayerData : []);
-        setLsts(Array.isArray(lstsData) ? lstsData : []);
-        setSummits(Array.isArray(summitsData) ? summitsData : []);
-        console.log(lstsData)
+        setSummits(Array.isArray(summitsData.data || summitsData) ? (summitsData.data || summitsData) : []);
       } catch (err) {
         console.error("Admin fetch error:", err);
         setError(err?.message || "Failed to load admin data");
@@ -139,6 +135,7 @@ export default function Admin() {
 
   const getWeekRangeForDate = (date = new Date()) => {
     const d = new Date(date);
+    d.setHours(0,0,0,0);
     const day = d.getDay(); 
 
     const diffToMonday = (day + 6) % 7; 
@@ -178,17 +175,70 @@ export default function Admin() {
   };
 
   const weeklyLsts = useMemo(() => {
-    if (!Array.isArray(lsts) || lsts.length === 0) return [];
-    const { monday, friday } = getWeekRangeForDate(new Date());
+  if (!Array.isArray(lsts) || lsts.length === 0) return [];
+  const { monday, friday } = getWeekRangeForDate(new Date());
 
-    return lsts.filter((item) => {
-      const dateStr = item.submittedAt || item.submittedOn || item.date || item.createdAt || item.submissionDate;
+  return lsts
+    .filter((item) => {
+      const dateStr =
+        item.submittedAt ||
+        item.submittedOn ||
+        item.date ||
+        item.createdAt ||
+        item.submissionDate;
+
       if (!dateStr) return false;
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return false;
       return d >= monday && d <= friday;
-    });
-  }, [lsts]);
+    })
+    .sort((a, b) => new Date(a.submittedAt || a.submittedOn || a.date || a.createdAt || a.submissionDate) -
+                    new Date(b.submittedAt || b.submittedOn || b.date || b.createdAt || b.submissionDate));
+}, [lsts]);
+
+  
+const getWeekLabelForDate = (dateStr) => {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return "Unknown Week";
+
+  const weekNum = Math.ceil(d.getDate() / 7);
+  const ordinal = weekOrdinal(d);
+  const monthName = d.toLocaleString("default", { month: "long" });
+  const year = d.getFullYear();
+
+  return `${ordinal} week of ${monthName} ${year}`;
+};
+
+  
+const lstsGroupedByWeek = useMemo(() => {
+  const groups = {};
+
+  lsts.forEach(item => {
+    const dateStr =
+      item.submitted_at ||
+      item.submittedAt ||
+      item.submittedOn ||
+      item.date ||
+      item.createdAt ||
+      item.created_at ||
+      item.submissionDate;
+
+    if (!dateStr) return;
+
+    const label = getWeekLabelForDate(dateStr);
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(item);
+  });
+
+  Object.keys(groups).forEach(label => {
+    groups[label].sort((a, b) =>
+      new Date(a.submitted_at || a.submittedAt) - new Date(b.submitted_at || b.submittedAt)
+    );
+  });
+
+  return groups;
+}, [lsts]);
+
 
  const handleUpload = (e) => {
   e.preventDefault();
@@ -214,7 +264,7 @@ export default function Admin() {
   fd.append("date", uploadDate);
   fd.append("file", uploadFile);
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", endpoints.upload, true);
+  xhr.open("POST", `${API_BASE_URL}${API_ENDPOINTS.UPLOAD_MESSAGE}`, true);
    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
    
   xhr.upload.onprogress = (evt) => {
@@ -250,38 +300,43 @@ export default function Admin() {
 };
 
   const handleAssignAdmin = async (e) => {
-    e.preventDefault();
-    setAssignStatus("");
-    const token = getToken();
-    if (!token) {
-      setAssignStatus("❌ Not logged in.");
-      return;
-    }
-    if (!adminEmail?.trim()) {
-      setAssignStatus("❌ Provide an email.");
-      return;
+  e.preventDefault();
+
+  setAssignStatus("");
+  const token = getToken();
+  if (!token) {
+    setAssignStatus("❌ Not logged in.");
+    return;
+  }
+
+  if (!adminEmail?.trim()) {
+    setAssignStatus("❌ Provide an email.");
+    return;
+  }
+
+  setAssigningAdmin(true);
+
+  try {
+    const res = await fetchWithAuth(API_ENDPOINTS.ASSIGN_ADMIN, {
+      method: "POST",
+      body: JSON.stringify({ email: adminEmail.trim() }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(body || `Request failed (${res.status})`);
     }
 
-    try {
-      const res = await fetch(endpoints.makeadmin, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: adminEmail.trim() }),
-      });
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(body || `Request failed (${res.status})`);
-      }
-      setAssignStatus("✅ Admin assigned.");
-      setAdminEmail("");
-    } catch (err) {
-      console.error("Assign admin error:", err);
-      setAssignStatus("❌ " + (err?.message || "Failed"));
-    }
-  };
+    setAssignStatus("✅ Admin assigned successfully!");
+    setAdminEmail("");
+  } catch (err) {
+    console.error("Assign admin error:", err);
+    setAssignStatus("❌ " + (err?.message || "Failed"));
+  } finally {
+    setAssigningAdmin(false);
+  }
+};
+
 
   const loadHtml2Pdf = () => {
     return new Promise((resolve, reject) => {
@@ -302,40 +357,127 @@ export default function Admin() {
     });
   };
 
-  const downloadSectionAsPDF = async (sectionRef, defaultFilename) => {
-    if (!sectionRef?.current) return alert("Nothing to export");
-    try {
-      const html2pdf = await loadHtml2Pdf();
-      html2pdf()
-        .from(sectionRef.current)
-        .set({
-          margin: 10,
-          filename: `${defaultFilename}_${new Date().toISOString().replace(/[:.]/g, "-")}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-        })
-        .save();
-    } catch (err) {
-      console.warn("html2pdf failed, falling back to CSV:", err);
-      if (sectionRef === prayersRef) downloadDataAsCSV(prayers, defaultFilename);
-      else if (sectionRef === lstsRef) downloadDataAsCSV(lsts, defaultFilename);
-      else if (sectionRef === summitsRef) downloadDataAsCSV(summits, defaultFilename);
-    }
-  };
 
-  const downloadDataAsCSV = (dataArray, baseFilename = "export") => {
-    if (!Array.isArray(dataArray) || dataArray.length === 0) {
-      alert("No data to download");
-      return;
-    }
+
+const sanitizeLstsForExport = (arr) => {
+  return arr.map(item => ({
+    Name: `${item.title || ''} ${item.surname || ''} ${item.other_names || item.otherNames || ''}`.trim(),
+    Phone: item.phone_number || item.phoneNumber,
+    Email: item.email,
+    Address: item.residential_address || item.residentialAddress,
+    Gender: item.gender,
+    Department: Array.isArray(item.department_in_church) 
+      ? item.department_in_church.join(", ") 
+      : (item.department_in_church || item.departmentInChurch || item.department),
+    Position: item.position_in_church || item.positionInChurch || item.position,
+    Baptized: item.is_baptized !== undefined ? (item.is_baptized ? "Yes" : "No") : item.baptized,
+    Student: item.is_student !== undefined ? (item.is_student ? "Yes" : "No") : (item.student || item.isStudent),
+    School_Department: item.department_in_school || item.departmentInSchool || '',
+    Level: item.level || '',
+    Vision: item.vision_goals || item.vision || '',
+    Submitted_At: item.submitted_at 
+      ? new Date(item.submitted_at).toLocaleString() 
+      : (item.submittedAt ? new Date(item.submittedAt).toLocaleString() : "")
+  }));
+  };
+  
+const createExportHtml = (dataArray) => {
+  const wrapper = document.createElement("div");
+  wrapper.style.padding = "20px";
+  wrapper.innerHTML = dataArray
+    .map((p, i) => `
+      <div class="admin-card" style="margin-bottom: 15px; text-align: center;">
+        <h4>#${i + 1}</h4>
+
+        <p><strong>Name:</strong> ${p.Name}</p>
+        <p><strong>Phone:</strong> ${p.Phone}</p>
+        <p><strong>Email:</strong> ${p.Email}</p>
+        <p><strong>Address:</strong> ${p.Address}</p>
+        <p><strong>Gender:</strong> ${p.Gender}</p>
+        <p><strong>Department:</strong> ${p.Department}</p>
+        <p><strong>Position:</strong> ${p.Position}</p>
+        <p><strong>Baptized:</strong> ${p.Baptized}</p>
+        <p><strong>Student:</strong> ${p.Student}</p>
+        ${p.Student === 'Yes' ? `
+          <p><strong>School Department:</strong> ${p.School_Department}</p>
+          <p><strong>Level:</strong> ${p.Level}</p>
+        ` : ''}
+        <p><strong>Vision:</strong> ${p.Vision}</p>
+        <p><strong>Submitted:</strong> ${p.Submitted_At}</p>
+      </div>
+    `)
+    .join("");
+  document.querySelectorAll("link[rel='stylesheet'], style").forEach((el) => {
+    wrapper.appendChild(el.cloneNode(true));
+  });
+
+  return wrapper;
+};
+
+
+
+
+const downloadSectionAsPDF = async (sectionRef, defaultFilename) => {
+  if (!sectionRef?.current) return alert("Nothing to export");
+  setExporting(true);
+  setExportingText("Generating PDF...");
+
+  try {
+    const html2pdf = await loadHtml2Pdf();
+
+    await html2pdf()
+      .from(sectionRef.current)
+      .set({
+        margin: 10,
+        filename: `${defaultFilename}_${new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      })
+      .save();
+
+  } catch (err) {
+    console.warn("html2pdf failed, falling back to CSV:", err);
+
+    setExportingText("PDF failed — exporting CSV...");
+
+    if (sectionRef.current === prayersRef.current)
+      downloadDataAsCSV(prayers, defaultFilename);
+    else if (sectionRef.current === lstsRef.current)
+      downloadDataAsCSV(lsts, defaultFilename);
+    else if (sectionRef.current === summitsRef.current)
+      downloadDataAsCSV(summits, defaultFilename);
+
+  } finally {
+    setTimeout(() => {
+      setExporting(false);
+      setExportingText("");
+    }, 600);
+  }
+};
+
+
+const downloadDataAsCSV = (dataArray, baseFilename = "export") => {
+  if (!Array.isArray(dataArray) || dataArray.length === 0) {
+    alert("No data to download");
+    return;
+  }
+
+  setExporting(true);
+  setExportingText("Exporting CSV...");
+
+  try {
     const keys = Array.from(
       dataArray.reduce((set, item) => {
         Object.keys(item || {}).forEach((k) => set.add(k));
         return set;
       }, new Set())
     );
+
     const csvRows = [keys.join(",")];
+
     dataArray.forEach((row) => {
       const values = keys.map((k) => {
         const val = row[k] ?? "";
@@ -343,14 +485,27 @@ export default function Admin() {
       });
       csvRows.push(values.join(","));
     });
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+
+    const blob = new Blob([csvRows.join("\n")], {
+      type: "text/csv;charset=utf-8;"
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${baseFilename}_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
+    a.download = `${baseFilename}_${new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+
+  } finally {
+    setTimeout(() => {
+      setExporting(false);
+      setExportingText("");
+    }, 600);
+  }
+}; 
 
   const renderSection = () => {
     switch (activeTab) {
@@ -394,7 +549,7 @@ export default function Admin() {
         );
 
       case "lsts-section": {
-        const displayed = showAllLsts ? lsts : weeklyLsts;
+        const displayed = showAllLsts ? lsts : weeklyLstsData;
         return (
           <section id="lsts-section" className="admin-section" style={{ position: 'relative' }}>
             <h3 style={{ textTransform: 'capitalize' }}>{showAllLsts ? 'All LSTS registrations' : getWeekLabel()}</h3>
@@ -403,60 +558,96 @@ export default function Admin() {
 
               <button
                 className="download-btn"
-                onClick={() => downloadSectionAsPDF(lstsRef, showAllLsts ? "All_LSTS_Registrations" : "LSTS_Registrations")}
+                onClick={() => {
+                  const safe = sanitizeLstsForExport(showAllLsts ? lsts : weeklyLstsData);
+                  const temp = createExportHtml(safe);
+                  downloadSectionAsPDF({ current: temp }, showAllLsts ? "All_LSTS_Registrations" : "LSTS_Registrations");
+                }}
+
               >
                 {showAllLsts ? "Download All LSTS Registrations PDF" : "Download LSTS Registrations PDF For This Week"}
               </button>
-
-              <button className="download-btn" onClick={() => downloadDataAsCSV(showAllLsts ? lsts : weeklyLsts, showAllLsts ? "All_LSTS_Registrations" : "LSTS_Registrations")}>Download CSV</button>
-            </div>
-
-            {showAllLsts && (
               <button
-                className="return-weekly-btn"
-                onClick={() => {
-                  setShowAllLsts(false) 
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                style={{ position: 'fixed', top: 280, right: 50, zIndex: 4000 }}
-                title="Return to weekly registrations"
+                className="download-btn"
+                onClick={() =>
+                  downloadDataAsCSV(
+                    sanitizeLstsForExport(showAllLsts ? lsts : weeklyLstsData),
+                    showAllLsts ? "All_LSTS_Registrations" : "LSTS_Registrations"
+                  )
+                }
               >
-                Return to weekly registrations
-              </button>
-            )}
+          Download CSV
+        </button>
 
-            <div id="lsts-registrations" className="admin-grid" ref={lstsRef}>
-              {loading ? (
-                <p>Loading...</p>
-              ) : displayed.length > 0 ? (
-                displayed.map((person, i) => (
-                  <div className="admin-card" key={i}>
-                    <h4 style={{ marginBottom: '6px' }}>#{i + 1}</h4>
-                    <p><strong>Title:</strong> {person.title}</p>
+             </div>
+            
+    {showAllLsts ? (
+  Object.entries(lstsGroupedByWeek).map(([week, items], idx) => (
+    <div key={idx} style={{ marginBottom: "30px" }}>
+      <h3>{week}</h3>
+      <div className="admin-grid">
+        {items.map((person, i) => (
+          <div className="admin-card" key={i}>
+            <h4>#{i + 1}</h4>
+            <p><strong>Title:</strong> {person.title}</p>
                     <p><strong>Surname:</strong> {person.surname}</p>
-                    <p><strong>Other Names:</strong> {person.otherNames}</p>
-                    <p><strong>Phone:</strong> {person.phoneNumber}</p>
+                    <p><strong>Other Names:</strong> {person.other_names ?? person.otherNames}</p>
+                    <p><strong>Phone:</strong> {person.phone_number ?? person.phoneNumber}</p>
                     <p><strong>Email:</strong> {person.email}</p>
-                    <p><strong>Address:</strong> {person.residentialAddress}</p>
+                    <p><strong>Address:</strong> {person.residential_address ?? person.residentialAddress}</p>
                     <p><strong>Gender:</strong> {person.gender}</p>
-                    <p><strong>Department:</strong> {person.departmentInChurch ?? person.department}</p>
-                    <p><strong>Position:</strong> {person.positionInChurch ?? person.position}</p>
-                    <p><strong>Baptized:</strong> {person.baptized}</p>
-                    <p><strong>Vision:</strong> {person.vision}</p>
-                    <p><strong>Is Student:</strong> {person.student ?? person.isStudent}</p>
-                    {String(person.student ?? person.isStudent ?? "").toLowerCase() === "yes" && (
+                    <p><strong>Department:</strong> {Array.isArray(person.department_in_church) ? person.department_in_church.join(", ") : (person.department_in_church ?? person.departmentInChurch ?? person.department)}</p>
+                    <p><strong>Position:</strong> {person.position_in_church ?? person.positionInChurch ?? person.position}</p>
+                    <p><strong>Baptized:</strong> {person.is_baptized !== undefined ? (person.is_baptized ? "Yes" : "No") : (person.baptized)}</p>
+                    <p><strong>Vision:</strong> {person.vision_goals ?? person.vision}</p>
+                    <p><strong>Is Student:</strong> {person.is_student !== undefined ? (person.is_student ? "Yes" : "No") : (person.student ?? person.isStudent)}</p>
+                    {(person.is_student || String(person.student ?? person.isStudent ?? "").toLowerCase() === "yes") && (
                       <>
-                        <p><strong>Dept. in School:</strong> {person.departmentInSchool}</p>
+                        <p><strong>Dept. in School:</strong> {person.department_in_school ?? person.departmentInSchool}</p>
                         <p><strong>Level:</strong> {person.level}</p>
                       </>
                     )}
-                    <p><strong>Submitted At:</strong> {person.submittedAt ? new Date(person.submittedAt).toLocaleString() : "N/A"}</p>
+                    <p><strong>Submitted At:</strong> {person.submitted_at ? new Date(person.submitted_at).toLocaleString() : (person.submittedAt ? new Date(person.submittedAt).toLocaleString() : "N/A")}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  ))
+) : (
+  <div id="lsts-registrations" className="admin-grid" ref={lstsRef}>
+    {loading ? (
+      <p>Loading...</p>
+    ) : weeklyLstsData.length > 0 ? (
+      weeklyLstsData.map((person, i) => (
+        <div className="admin-card" key={i}>
+          <h4>#{i + 1}</h4>
+           <p><strong>Title:</strong> {person.title}</p>
+                    <p><strong>Surname:</strong> {person.surname}</p>
+                    <p><strong>Other Names:</strong> {person.other_names ?? person.otherNames}</p>
+                    <p><strong>Phone:</strong> {person.phone_number ?? person.phoneNumber}</p>
+                    <p><strong>Email:</strong> {person.email}</p>
+                    <p><strong>Address:</strong> {person.residential_address ?? person.residentialAddress}</p>
+                    <p><strong>Gender:</strong> {person.gender}</p>
+                    <p><strong>Department:</strong> {Array.isArray(person.department_in_church) ? person.department_in_church.join(", ") : (person.department_in_church ?? person.departmentInChurch ?? person.department)}</p>
+                    <p><strong>Position:</strong> {person.position_in_church ?? person.positionInChurch ?? person.position}</p>
+                    <p><strong>Baptized:</strong> {person.is_baptized !== undefined ? (person.is_baptized ? "Yes" : "No") : (person.baptized)}</p>
+                    <p><strong>Vision:</strong> {person.vision_goals ?? person.vision}</p>
+                    <p><strong>Is Student:</strong> {person.is_student !== undefined ? (person.is_student ? "Yes" : "No") : (person.student ?? person.isStudent)}</p>
+                    {(person.is_student || String(person.student ?? person.isStudent ?? "").toLowerCase() === "yes") && (
+                      <>
+                        <p><strong>Dept. in School:</strong> {person.department_in_school ?? person.departmentInSchool}</p>
+                        <p><strong>Level:</strong> {person.level}</p>
+                      </>
+                    )}
+                    <p><strong>Submitted At:</strong> {person.submitted_at ? new Date(person.submitted_at).toLocaleString() : (person.submittedAt ? new Date(person.submittedAt).toLocaleString() : "N/A")}</p>
                   </div>
                 ))
               ) : (
-                <p className="error">No {showAllLsts ? 'LSTS' : 'weekly'} records available.</p>
+                <p className="error">No weekly records available.</p>
               )}
             </div>
+          )}
+
             <div>
                {!showAllLsts && (
                 <button className="download-btn" onClick={() => {
@@ -466,6 +657,19 @@ export default function Admin() {
                   Click to view and download all lsts registrations
                 </button>
               )}
+
+                {showAllLsts && (
+              <button
+                className="return-weekly-btn"
+                onClick={() => {
+                  setShowAllLsts(false) 
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                title="Return to weekly registrations"
+              >
+                Return to weekly registrations
+              </button>
+            )}
             </div>
           </section>
         );
@@ -594,6 +798,14 @@ export default function Admin() {
       {checkingAdmin && (
         <LoadingOverlay isLoading={true} text={statusMessage} />
       )}
+      {assigningAdmin && (
+        <LoadingOverlay isLoading={true} text="Assigning admin..." />
+      )}
+
+      {exporting && (
+        <LoadingOverlay isLoading={true} text={exportingText || "Exporting..."} />
+      )}
+
 
       <main
         className="admin-main"

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchWithAuth, API_ENDPOINTS, removeAuthToken } from "../config/api";
 
 export default function useSessionCheck() {
   const navigate = useNavigate();
@@ -15,34 +16,17 @@ export default function useSessionCheck() {
       }
 
       try {
-        const response = await fetch(
-          "https://dgunn-dud0b0eygjfcaxfs.southafricanorth-01.azurewebsites.net/session",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`, 
-            },
-          }
-        );
+        const response = await fetchWithAuth(API_ENDPOINTS.PROFILE);
 
         if (!response.ok) {
           console.warn("Session check failed:", response.status);
-          sessionStorage.removeItem("authToken");
+          removeAuthToken();
           navigate("/login");
           return;
         }
-
-        const data = await response.json();
-        // console.log("Session check response:", data);
-
-        if (!data.isAuthenticated) {
-          sessionStorage.removeItem("authToken");
-          navigate("/login");
-        }
       } catch (err) {
         console.error("Error checking session:", err);
-        sessionStorage.removeItem("authToken");
+        removeAuthToken();
         navigate("/login");
       }
     };
