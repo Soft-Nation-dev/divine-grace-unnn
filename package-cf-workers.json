@@ -1,0 +1,21 @@
+{
+  "name": "divine-grace-unn-cf-workers",
+  "version": "1.0.0",
+  "description": "Divine Grace UNN Backend - Cloudflare Workers + Hono",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "wrangler build"
+  },
+  "dependencies": {
+    "hono": "^3.11.0",
+    "uuid": "^9.0.0",
+    "jose": "^5.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.26.0",
+    "@cloudflare/workers-types": "^4.20240605.0"
+  }
+}

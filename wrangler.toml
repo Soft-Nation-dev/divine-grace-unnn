@@ -1,0 +1,45 @@
+name = "divine-grace-api"
+type = "service"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+
+# Environment configuration
+env = "production"
+main = "src/index.js"
+
+# KV Namespace bindings for data storage
+kv_namespaces = [
+  { binding = "LSTS_KV", id = "", preview_id = "" },
+  { binding = "SUMMIT_KV", id = "", preview_id = "" },
+  { binding = "PRAYERS_KV", id = "", preview_id = "" }
+]
+
+# Durable Objects (optional - for advanced use cases)
+# durable_objects = {
+#   bindings = [
+#     { name = "COUNTER", class_name = "Counter" }
+#   ]
+# }
+
+# Environment variables
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Build configuration
+[build]
+command = "npm install"
+cwd = "./"
+main = "src/index.js"
+
+# Triggers (optional - for scheduled tasks)
+# [[triggers.crons]]
+# cron = "0 0 * * *"
+
+# Observability
+[observability]
+enabled = false

@@ -1,6 +1,7 @@
 # Deployment Guide for Divine Grace UNN
 
 ## Current Setup
+
 - **Domain**: divinegraceunn.com.ng
 - **Frontend**: GitHub Pages
 - **Backend**: Needs to be deployed separately (see options below)
@@ -28,6 +29,7 @@ git push origin main
 Your frontend will automatically deploy when you push to GitHub if GitHub Pages is enabled.
 
 **Verify GitHub Pages Settings:**
+
 1. Go to your repository on GitHub
 2. Click **Settings** > **Pages**
 3. Under "Source", select **GitHub Actions** or **main branch**
@@ -131,12 +133,14 @@ git push origin main
 ## Troubleshooting
 
 **If frontend can't connect to backend:**
+
 1. Check browser console for CORS errors
 2. Verify `VITE_API_URL` in `.env.production`
 3. Ensure backend is running (visit backend URL directly)
 4. Check backend logs in hosting platform
 
 **If backend won't start:**
+
 1. Verify all environment variables are set
 2. Check backend logs for errors
 3. Ensure Node.js version is compatible (14+)
@@ -155,6 +159,7 @@ Total Monthly Cost: **$0** (on free tiers)
 ## Recommended Production Setup
 
 For better reliability as you grow:
+
 - **Backend**: Render Starter Plan ($7/month) or Railway Hobby Plan ($5/month)
 - **Database**: Supabase Pro ($25/month) when you exceed free tier
 - **Monitoring**: Use Render/Railway built-in logs
