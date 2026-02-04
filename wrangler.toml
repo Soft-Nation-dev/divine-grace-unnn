@@ -1,20 +1,18 @@
 name = "divine-grace-api"
-type = "service"
-account_id = ""
-workers_dev = true
-route = ""
-zone_id = ""
-
-# Environment configuration
-env = "production"
+account_id = "2566c6e2a3e93ce72e192ed984bde7f0"
 main = "src/index.js"
+compatibility_date = "2025-02-04"
 
 # KV Namespace bindings for data storage
 kv_namespaces = [
-  { binding = "LSTS_KV", id = "", preview_id = "" },
-  { binding = "SUMMIT_KV", id = "", preview_id = "" },
-  { binding = "PRAYERS_KV", id = "", preview_id = "" }
+	{ binding = "LSTS_KV", id = "f1da1bada70a4819a357269787f11c7a", preview_id = "0fd54322e53345b6b204f8dd8956a3ab" },
+	{ binding = "PRAYERS_KV", id = "0bb090356717423ba8e76c2231c1ce7a", preview_id = "aed71c9a5bb4432bab4b3e9891e50d0c" },
+	{ binding = "SUMMIT_KV", id = "9e92d0ae77054edfb4c557ad8bcfcd04", preview_id = "f29929524dab4d86b30fa909000758e3" }
 ]
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "divine-grace-storage"
 
 # Durable Objects (optional - for advanced use cases)
 # durable_objects = {
@@ -24,17 +22,12 @@ kv_namespaces = [
 # }
 
 # Environment variables
-[env.production]
-vars = { ENVIRONMENT = "production" }
+# Default environment variables
+[vars]
+ENVIRONMENT = "production"
 
 [env.development]
 vars = { ENVIRONMENT = "development" }
-
-# Build configuration
-[build]
-command = "npm install"
-cwd = "./"
-main = "src/index.js"
 
 # Triggers (optional - for scheduled tasks)
 # [[triggers.crons]]

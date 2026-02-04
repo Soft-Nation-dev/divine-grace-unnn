@@ -3,12 +3,14 @@
 ## Quick Start
 
 ### Step 1: Setup Cloudflare Workers CLI
+
 ```bash
 npm install -g wrangler
 wrangler login
 ```
 
 ### Step 2: Create KV Namespaces
+
 ```bash
 wrangler kv:namespace create "LSTS_KV"
 wrangler kv:namespace create "PRAYERS_KV"
@@ -18,6 +20,7 @@ wrangler kv:namespace create "SUMMIT_KV"
 ```
 
 ### Step 3: Set Environment Variables
+
 ```bash
 # Interactive prompts for secrets
 wrangler secret put SUPABASE_URL
@@ -29,6 +32,7 @@ wrangler secret put R2_PUBLIC_URL
 ```
 
 ### Step 4: Deploy
+
 ```bash
 # Test locally
 wrangler dev
@@ -38,6 +42,7 @@ wrangler deploy
 ```
 
 ### Step 5: Update Frontend
+
 ```javascript
 // src/config/api.js
 const API_BASE_URL = "https://api.divinegraceunn.com.ng"; // Your Cloudflare URL
@@ -45,14 +50,14 @@ const API_BASE_URL = "https://api.divinegraceunn.com.ng"; // Your Cloudflare URL
 
 ## What Changed
 
-| Component | Old (Express) | New (Cloudflare) |
-|-----------|--------------|-----------------|
-| Framework | Express.js | Hono.js |
-| Database | Supabase (all) | Supabase (auth) + KV (data) |
-| File Storage | Cloudflare R2 | Cloudflare R2 (same) |
-| Deployment | Render/Railway | Cloudflare Workers |
-| Cost | ~$0-10/mo | ~$0-2/mo |
-| Timeout | 30+ minutes | 30 seconds |
+| Component    | Old (Express)  | New (Cloudflare)            |
+| ------------ | -------------- | --------------------------- |
+| Framework    | Express.js     | Hono.js                     |
+| Database     | Supabase (all) | Supabase (auth) + KV (data) |
+| File Storage | Cloudflare R2  | Cloudflare R2 (same)        |
+| Deployment   | Render/Railway | Cloudflare Workers          |
+| Cost         | ~$0-10/mo      | ~$0-2/mo                    |
+| Timeout      | 30+ minutes    | 30 seconds                  |
 
 ## Benefits
 
@@ -70,10 +75,10 @@ All endpoints remain the same! Frontend doesn't need updates except for the base
 ```javascript
 // This still works
 fetch(`${API_BASE_URL}/api/lsts`, {
-  method: 'POST',
-  headers: { 'Authorization': `Bearer ${token}` },
-  body: JSON.stringify(data)
-})
+  method: "POST",
+  headers: { Authorization: `Bearer ${token}` },
+  body: JSON.stringify(data),
+});
 ```
 
 ## File Structure
@@ -125,6 +130,7 @@ wrangler dev # Then execute migrate script
 ## Troubleshooting
 
 ### Namespace Not Found
+
 ```bash
 wrangler kv:namespace list
 # If empty, recreate:
@@ -132,16 +138,19 @@ wrangler kv:namespace create "LSTS_KV"
 ```
 
 ### Auth Errors
+
 - Verify JWT_SECRET matches Supabase
 - Check token hasn't expired
 - Confirm SUPABASE_URL is correct
 
 ### Data Not Persisting
+
 - Confirm KV binding in wrangler.toml
 - Check Cloudflare account permissions
 - Verify KV namespace is in correct account
 
 ### Slow Performance
+
 - Workers have 30-second timeout
 - Optimize KV queries (use indexes)
 - Cache frequently accessed data
@@ -176,16 +185,19 @@ curl -H "Authorization: Bearer TOKEN" \
 ## Comparison: Storage Costs
 
 ### Supabase ($0 - $25/mo)
+
 - Free: 500MB database
 - Pay-as-you-go: $0.125/GB/month
 
 ### Cloudflare ($0 - $2/mo)
+
 - KV Free: 10GB
 - KV Paid: $0.50/GB/month
 - R2 Free: 10GB
 - R2 Paid: $0.015/GB/month
 
 **With 50GB data:**
+
 - Supabase: ~$6.25/month
 - Cloudflare: $0.50/month (99% cheaper!)
 

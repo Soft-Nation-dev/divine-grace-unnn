@@ -13,8 +13,7 @@ const getApiUrl = () => {
   if (import.meta.env.MODE === "production") {
     return import.meta.env.VITE_API_URL || "https://api.divinegraceunn.com.ng";
   }
-
-  return "http://localhost:3001";
+  return "https://divine-grace-api.ojam.workers.dev";
 };
 
 export const API_BASE_URL = getApiUrl();
@@ -100,6 +99,19 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
   });
 
   if (response.status === 401) {
+    try {
+      const raw = await response.clone().text();
+      console.error("Auth 401:", {
+        endpoint: url,
+        status: response.status,
+        body: raw
+      });
+    } catch (e) {
+      console.error("Auth 401 (failed to read body):", e);
+    }
+  }
+
+  if (response.status === 401 && !options.skipAuthRedirect) {
     // Token expired or invalid
     removeAuthToken();
     window.location.href = "/login";

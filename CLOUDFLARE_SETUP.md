@@ -3,51 +3,55 @@
 ## Architecture Overview
 
 **Old Setup (Express.js):**
+
 - Supabase: Everything (auth, metadata, registrations)
 - Storage: Cloudflare R2 (media files)
 
 **New Setup (Cloudflare Workers):**
+
 - **Supabase**: Auth + metadata only
   - `users` table: id, email, title, full_name, phone_number, etc.
   - `admin_assignments` table: for admin tracking
-  
 - **Cloudflare KV**: LSTS registrations, prayers, summit forms
   - `LSTS_KV`: All LSTS form submissions
-  - `PRAYERS_KV`: All prayer requests  
+  - `PRAYERS_KV`: All prayer requests
   - `SUMMIT_KV`: Summit registrations
-  
 - **Cloudflare R2**: Media files (audio messages, images)
   - `divine-grace-storage` bucket
 
 ## Storage Breakdown
 
-| Data Type | Where Stored | Why |
-|-----------|--------------|-----|
-| User accounts & auth | Supabase | Need robust auth system |
-| User profile metadata | Supabase | Minimal data (name, email, title) |
-| LSTS Registrations | Cloudflare KV | Large volume, cheaper storage |
-| Prayer Requests | Cloudflare KV | Cheaper than Supabase |
-| Summit Registrations | Cloudflare KV | Cheaper than Supabase |
-| Audio Messages | Cloudflare R2 | Cheaper than both, optimized for media |
+| Data Type             | Where Stored  | Why                                    |
+| --------------------- | ------------- | -------------------------------------- |
+| User accounts & auth  | Supabase      | Need robust auth system                |
+| User profile metadata | Supabase      | Minimal data (name, email, title)      |
+| LSTS Registrations    | Cloudflare KV | Large volume, cheaper storage          |
+| Prayer Requests       | Cloudflare KV | Cheaper than Supabase                  |
+| Summit Registrations  | Cloudflare KV | Cheaper than Supabase                  |
+| Audio Messages        | Cloudflare R2 | Cheaper than both, optimized for media |
 
 ## Cost Comparison
 
 ### Supabase (Per Month)
+
 - Free tier: 500MB database, 1GB file storage
 - Pay-as-you-go: $0.125/GB month
 
 ### Cloudflare (Per Month)
+
 - **KV**: First 10GB FREE, then $0.50/GB
 - **R2**: First 10GB storage FREE, $0.015/GB after
 - **Workers**: 100,000 requests/day FREE tier
 
 **Monthly Cost with 50GB data:**
+
 - Old setup: ~$6-8 (Supabase)
 - New setup: $0-2 (Cloudflare free tier)
 
 ## Step 1: Setup Cloudflare Workers Project
 
 ### 1.1 Install Wrangler CLI
+
 ```bash
 npm install -g @cloudflare/wrangler
 # or use npx wrangler
@@ -68,6 +72,7 @@ wrangler kv:namespace create "SUMMIT_KV" --preview
 ```
 
 You'll get IDs like:
+
 ```
 [ LSTS_KV ]
 id = "abc123def456"
@@ -77,6 +82,7 @@ preview_id = "abc123def457"
 ### 1.3 Update wrangler.toml
 
 Replace the placeholder IDs:
+
 ```toml
 kv_namespaces = [
   { binding = "LSTS_KV", id = "abc123def456", preview_id = "abc123def457" },
@@ -94,6 +100,7 @@ wrangler whoami
 ```
 
 Copy your Account ID and update `wrangler.toml`:
+
 ```toml
 account_id = "your-account-id-here"
 ```
@@ -116,6 +123,7 @@ wrangler secret put R2_PUBLIC_URL
 ```
 
 Or create a `.env.local` file in project root:
+
 ```
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJhbGc...
@@ -128,11 +136,13 @@ R2_PUBLIC_URL=https://divine-grace-storage.your-domain.r2.cloudflarestorage.com
 ### 2.3 Link R2 Bucket
 
 If using R2 for media:
+
 ```bash
 wrangler r2 bucket create divine-grace-storage
 ```
 
 Update `wrangler.toml`:
+
 ```toml
 [[r2_buckets]]
 binding = "R2_BUCKET"
@@ -190,9 +200,7 @@ Your API will be at: `https://api.divinegraceunn.com.ng`
 
 ```javascript
 // If you had data in Supabase, export it
-const { data } = await supabase
-  .from('lsts_forms')
-  .select('*');
+const { data } = await supabase.from("lsts_forms").select("*");
 
 // Save as JSON
 const json = JSON.stringify(data);
@@ -204,10 +212,7 @@ const json = JSON.stringify(data);
 ```javascript
 // Using Worker script to import
 for (const registration of data) {
-  await LSTS_KV.put(
-    `lsts:${registration.id}`,
-    JSON.stringify(registration)
-  );
+  await LSTS_KV.put(`lsts:${registration.id}`, JSON.stringify(registration));
 }
 ```
 
@@ -227,6 +232,7 @@ const getApiUrl = () => {
 ```
 
 Update `.env.production`:
+
 ```
 VITE_API_URL=https://api.divinegraceunn.com.ng
 ```
@@ -242,7 +248,7 @@ CREATE TABLE users (
   email TEXT UNIQUE NOT NULL,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
-  
+
   -- Metadata
   full_name TEXT,
   title TEXT,
@@ -266,6 +272,7 @@ CREATE TABLE admin_assignments (
 ### What Moves to Cloudflare KV
 
 **LSTS Registrations** (KV key: `lsts:{id}`)
+
 ```json
 {
   "id": "uuid",
@@ -290,11 +297,13 @@ CREATE TABLE admin_assignments (
 ```
 
 **Weekly Indexing** (KV key: `index:lsts:2026-02-w1`)
+
 ```json
 ["lsts-id-1", "lsts-id-2", "lsts-id-3"]
 ```
 
 **User Indexing** (KV key: `lsts:user:{user-id}`)
+
 ```json
 ["lsts-id-1", "lsts-id-2"]
 ```
@@ -325,6 +334,7 @@ curl -X POST http://localhost:8787/api/lsts \
 ## Troubleshooting
 
 ### KV Namespace Not Found
+
 ```bash
 # Verify namespaces exist
 wrangler kv:namespace list
@@ -334,6 +344,7 @@ wrangler kv:namespace create "LSTS_KV"
 ```
 
 ### Deployment Failed
+
 ```bash
 # Check for errors
 wrangler deploy --verbose
@@ -343,26 +354,31 @@ wrangler publish --dry-run
 ```
 
 ### CORS Errors
+
 - Update `src/index.js` CORS origins to match your domain
 - Restart dev server: `wrangler dev`
 
 ### Auth Token Invalid
+
 - Verify `SUPABASE_JWT_SECRET` matches your Supabase settings
 - Check token expiration (JWT tokens expire after time)
 
 ## Performance Tips
 
 ### 1. Query Optimization
+
 - Use KV indexes to avoid listing all keys
 - Implement pagination for large datasets
 - Cache frequently accessed data
 
 ### 2. Timeout Management
+
 - Workers have 30-second timeout
 - Keep heavy operations fast
 - Use background processing for complex tasks
 
 ### 3. Cost Optimization
+
 - Use KV for frequently updated data
 - Use R2 only for files
 - Monitor request patterns

@@ -15,15 +15,35 @@ export const authMiddleware = async (c, next) => {
   const token = authHeader.substring(7);
 
   try {
-    // Get Supabase JWT secret from environment
+    const supabaseUrl = c.env.SUPABASE_URL;
+    const supabaseKey = c.env.SUPABASE_ANON_KEY;
+
+    if (supabaseUrl && supabaseKey) {
+      const res = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        method: 'GET',
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        c.set('userId', user.id);
+        c.set('userEmail', user.email);
+        c.set('user', user);
+        await next();
+        return;
+      }
+    }
+
+    // Fallback: verify JWT token directly
     const jwtSecret = new TextEncoder().encode(
-      c.env.SUPABASE_JWT_SECRET || 'your-super-secret-jwt-key'
+      c.env.SUPABASE_JWT_SECRET || c.env.JWT_SECRET || 'your-super-secret-jwt-key'
     );
 
-    // Verify JWT token
     const { payload } = await jwtVerify(token, jwtSecret);
 
-    // Store user info in context
     c.set('userId', payload.sub);
     c.set('userEmail', payload.email);
     c.set('user', payload);

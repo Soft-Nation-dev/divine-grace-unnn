@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../images/css/loginpage.css';
 import LoadingOverlay from '../components/overlay';
-import { fetchWithAuth, API_ENDPOINTS, setAuthToken } from '../config/api';
-import API_BASE_URL from '../config/api';
+import { API_ENDPOINTS, setAuthToken, API_BASE_URL } from '../config/api';
 
 export default function LoginPage() {
   const location = useLocation();
@@ -31,6 +30,17 @@ export default function LoginPage() {
     if (location?.state?.initialTab === 'register') setIsSignup(true);
     if (location?.state?.initialTab === 'login') setIsSignup(false);
   }, [location?.state?.initialTab]);
+
+  useEffect(() => {
+    const navError = location?.state?.error;
+    const storedError = sessionStorage.getItem('lastAuthError');
+    const message = navError || storedError;
+    if (message) {
+      setError(message);
+      setShowPointer(false);
+      sessionStorage.removeItem('lastAuthError');
+    }
+  }, [location?.state?.error]);
 
  
   const safeFetch = async (url, body) => {
@@ -104,10 +114,15 @@ export default function LoginPage() {
 
       const data = await safeFetch(url, body);
 
-      if (!isSignup && data.token) {
-        setAuthToken(data.token);
-        navigate('/dashboard');
-        return;
+      if (!isSignup) {
+        const token = data?.token || data?.session?.access_token || data?.access_token;
+        if (token) {
+          setAuthToken(token);
+          sessionStorage.setItem("authCheckSkipUntil", String(Date.now() + 20000));
+          navigate('/dashboard');
+          return;
+        }
+        throw new Error(data?.error || data?.message || 'Login failed. Please try again.');
       }
 
       setError('✅ Signup successful! Please log in.');
@@ -126,7 +141,6 @@ const handleForgotFlow = async () => {
   setError('');
 
   try {
-    console.log("🔵 Current step:", resetStep);
 
     // STEP 1 — SEND CODE
     if (resetStep === 1) {
@@ -134,8 +148,6 @@ const handleForgotFlow = async () => {
         `${API_BASE_URL}/api/auth/forgot-password`,
         { email: Email.trim() }
       );
-
-      console.log("🟣 API RESPONSE (forgot-password):", res);
 
       if (!res?.success && res?.error) throw new Error(res.error);
 
@@ -153,8 +165,6 @@ const handleForgotFlow = async () => {
         `${API_BASE_URL}/api/auth/verify-reset-code`,
         { email: Email.trim(), code: resetCode.trim() }
       );
-
-      console.log("🟡 API RESPONSE (verify-reset-code):", res);
 
       if (!res?.success && res?.error) throw new Error(res.error);
 
@@ -176,8 +186,6 @@ const handleForgotFlow = async () => {
           confirmPassword: newPass2,
         }
       );
-
-      console.log("🟢 API RESPONSE (reset-password):", res);
 
       if (!res?.success && res?.error) throw new Error(res.error);
 
