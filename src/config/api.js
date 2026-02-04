@@ -11,7 +11,7 @@ const getApiUrl = () => {
 
   // Default URLs based on environment
   if (import.meta.env.MODE === "production") {
-    return import.meta.env.VITE_API_URL || "https://api.divinegraceunn.com.ng";
+    return import.meta.env.VITE_API_URL || "https://divine-grace-api.ojam.workers.dev";
   }
   return "https://divine-grace-api.ojam.workers.dev";
 };
