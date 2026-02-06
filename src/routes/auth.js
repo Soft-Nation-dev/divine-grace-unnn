@@ -28,20 +28,18 @@ const hashCode = async (code) => {
 };
 
 const sendResetCodeEmail = async (env, email, code) => {
-  if (!env.BREVO_API_KEY || !env.BREVO_SENDER_EMAIL) {
+  if (!env.RESEND_API_KEY || !env.RESEND_SENDER_EMAIL) {
     throw new Error('Email service not configured');
   }
 
-  const senderName = env.BREVO_SENDER_NAME || 'Divine Grace UNN';
+  const senderName = env.RESEND_SENDER_NAME || 'Divine Grace UNN';
+  const from = `${senderName} <${env.RESEND_SENDER_EMAIL}>`;
 
   const payload = {
-    sender: {
-      name: senderName,
-      email: env.BREVO_SENDER_EMAIL
-    },
-    to: [{ email }],
+    from,
+    to: [email],
     subject: 'Your password reset code',
-    htmlContent: `
+    html: `
       <div style="font-family: Arial, sans-serif;">
         <p>Hello,</p>
         <p>Your password reset code is:</p>
@@ -52,18 +50,18 @@ const sendResetCodeEmail = async (env, email, code) => {
     `
   };
 
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'api-key': env.BREVO_API_KEY
+      Authorization: `Bearer ${env.RESEND_API_KEY}`
     },
     body: JSON.stringify(payload)
   });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Brevo email failed: ${text}`);
+    throw new Error(`Resend email failed: ${text}`);
   }
 };
 
