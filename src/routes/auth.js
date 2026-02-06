@@ -286,8 +286,9 @@ app.post('/reset-password', async (c) => {
     }
 
     const updateRes = await supabase.auth.updateUserPassword(user.id, newPassword, c.env.SUPABASE_SERVICE_KEY);
-    if (updateRes.error) {
-      return c.json({ error: updateRes.error.message }, 400);
+    const updateError = updateRes?.error?.message || updateRes?.error || null;
+    if (updateError) {
+      return c.json({ error: updateError }, updateRes?.statusCode || 400);
     }
 
     try {

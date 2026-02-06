@@ -8,6 +8,16 @@ export const getSupabaseClient = (env) => {
   const supabaseKey = env.SUPABASE_ANON_KEY;
   const serviceKey = env.SUPABASE_SERVICE_KEY;
 
+  const extractErrorMessage = (data, fallback) => {
+    if (!data) return fallback;
+    if (typeof data.error === 'string') return data.error;
+    if (data.error?.message) return data.error.message;
+    if (data.message) return data.message;
+    if (data.msg) return data.msg;
+    if (data.error_description) return data.error_description;
+    return fallback;
+  };
+
   return {
     auth: {
       signUp: async (email, password, metadata) => {
@@ -68,27 +78,41 @@ export const getSupabaseClient = (env) => {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            apikey: supabaseKey,
+            apikey: key,
             Authorization: `Bearer ${key}`
           },
           body: JSON.stringify({
             user_metadata: metadata
           })
         });
+        const data = await res.json();
+        if (!res.ok) {
+          return {
+            error: { message: extractErrorMessage(data, 'Failed to update user metadata') },
+            statusCode: res.status
+          };
+        }
 
-        return res.json();
+        return data;
       },
 
       getUserByEmail: async (email, key = serviceKey) => {
         const res = await fetch(`${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
           method: 'GET',
           headers: {
-            apikey: supabaseKey,
+            apikey: key,
             Authorization: `Bearer ${key}`
           }
         });
+        const data = await res.json();
+        if (!res.ok) {
+          return {
+            error: { message: extractErrorMessage(data, 'Failed to fetch user') },
+            statusCode: res.status
+          };
+        }
 
-        return res.json();
+        return data;
       },
 
       updateUserPassword: async (userId, password, key = serviceKey) => {
@@ -96,15 +120,22 @@ export const getSupabaseClient = (env) => {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            apikey: supabaseKey,
+            apikey: key,
             Authorization: `Bearer ${key}`
           },
           body: JSON.stringify({
             password
           })
         });
+        const data = await res.json();
+        if (!res.ok) {
+          return {
+            error: { message: extractErrorMessage(data, 'Failed to update password') },
+            statusCode: res.status
+          };
+        }
 
-        return res.json();
+        return data;
       }
     },
 

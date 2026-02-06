@@ -15,6 +15,8 @@ export default function LoginPage() {
   const [Email, setEmail] = useState('');
   const [Password, setPassword] = useState('');
   const [ConfirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +29,8 @@ export default function LoginPage() {
   const [resetCode, setResetCode] = useState('');
   const [newPass1, setNewPass1] = useState('');
   const [newPass2, setNewPass2] = useState('');
+  const [showNewPass1, setShowNewPass1] = useState(false);
+  const [showNewPass2, setShowNewPass2] = useState(false);
   const [resetSuccess, setResetSuccess] = useState('');
   const [resendSeconds, setResendSeconds] = useState(0);
 
@@ -379,20 +383,44 @@ const handleForgotFlow = async () => {
 
               {resetStep === 3 && (
                 <>
-                  <input
-                    type="password"
-                    placeholder="New password"
-                    value={newPass1}
-                    onChange={handleInputChange(setNewPass1)}
-                    required
-                  />
-                  <input
-                    type="password"
-                    placeholder="Confirm password"
-                    value={newPass2}
-                    onChange={handleInputChange(setNewPass2)}
-                    required
-                  />
+                  <div className="password-field">
+                    <input
+                      className="password-input"
+                      type={showNewPass1 ? 'text' : 'password'}
+                      placeholder="New password"
+                      value={newPass1}
+                      onChange={handleInputChange(setNewPass1)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      aria-label={showNewPass1 ? 'Hide password' : 'Show password'}
+                      aria-pressed={showNewPass1}
+                      onClick={() => setShowNewPass1((prev) => !prev)}
+                    >
+                      <span className="password-toggle__icon" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                  <div className="password-field">
+                    <input
+                      className="password-input"
+                      type={showNewPass2 ? 'text' : 'password'}
+                      placeholder="Confirm password"
+                      value={newPass2}
+                      onChange={handleInputChange(setNewPass2)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      aria-label={showNewPass2 ? 'Hide password' : 'Show password'}
+                      aria-pressed={showNewPass2}
+                      onClick={() => setShowNewPass2((prev) => !prev)}
+                    >
+                      <span className="password-toggle__icon" aria-hidden="true"></span>
+                    </button>
+                  </div>
                 </>
               )}
 
@@ -463,22 +491,46 @@ const handleForgotFlow = async () => {
                 />
               )}
 
-              <input
-                type="password"
-                placeholder="Password"
-                value={Password}
-                onChange={handleInputChange(setPassword)}
-                required
-              />
-
-              {isSignup && (
+              <div className="password-field">
                 <input
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={ConfirmPassword}
-                  onChange={handleInputChange(setConfirmPassword)}
+                  className="password-input"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={Password}
+                  onChange={handleInputChange(setPassword)}
                   required
                 />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  <span className="password-toggle__icon" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              {isSignup && (
+                <div className="password-field">
+                  <input
+                    className="password-input"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm Password"
+                    value={ConfirmPassword}
+                    onChange={handleInputChange(setConfirmPassword)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showConfirmPassword}
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  >
+                    <span className="password-toggle__icon" aria-hidden="true"></span>
+                  </button>
+                </div>
               )}
 
               {loginSuccess && <p className="success-text">{loginSuccess}</p>}
