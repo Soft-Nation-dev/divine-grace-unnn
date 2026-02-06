@@ -117,6 +117,94 @@
   border-radius: 20px;
 }
 
+.success-text {
+  color: #1f3b2c;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  text-align: center;
+  background-color: #e7f6ee;
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.migration-modal {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  width: min(560px, 92%);
+  animation: slideDown 0.35s ease;
+}
+
+.migration-modal__content {
+  background: rgba(5, 16, 35, 0.92);
+  color: #fff;
+  padding: 18px 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  text-align: center;
+}
+
+.migration-modal__text {
+  margin: 0 0 14px;
+  font-size: 0.98rem;
+}
+
+.migration-modal__actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.modal-close {
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.resend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.resend-button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.resend-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resend-button:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.resend-timer {
+  font-variant-numeric: tabular-nums;
+}
+
 .pointer {
   margin-left: 6px;
   font-size: 20px;
@@ -132,5 +220,17 @@
 
   50% {
     transform: translateY(-5px);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
   }
 }

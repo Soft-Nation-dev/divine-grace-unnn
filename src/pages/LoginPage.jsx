@@ -8,8 +8,6 @@ export default function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const migrationMode = true;
-
   const initialIsSignup = location?.state?.initialTab === 'register';
   const [isSignup, setIsSignup] = useState(initialIsSignup);
   const [Title, setTitle] = useState('');
@@ -20,7 +18,9 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState('');
   const [showPointer, setShowPointer] = useState(false);
+  const [showMigrationModal, setShowMigrationModal] = useState(false);
 
   const [forgotMode, setForgotMode] = useState(false);
   const [resetStep, setResetStep] = useState(1); // 1=email, 2=code, 3=new pass
@@ -28,18 +28,12 @@ export default function LoginPage() {
   const [newPass1, setNewPass1] = useState('');
   const [newPass2, setNewPass2] = useState('');
   const [resetSuccess, setResetSuccess] = useState('');
+  const [resendSeconds, setResendSeconds] = useState(0);
 
   useEffect(() => {
     if (location?.state?.initialTab === 'register') setIsSignup(true);
     if (location?.state?.initialTab === 'login') setIsSignup(false);
   }, [location?.state?.initialTab]);
-
-  useEffect(() => {
-    if (migrationMode) {
-      setForgotMode(true);
-      setIsSignup(false);
-    }
-  }, [migrationMode]);
 
   useEffect(() => {
     const navError = location?.state?.error;
@@ -51,6 +45,16 @@ export default function LoginPage() {
       sessionStorage.removeItem('lastAuthError');
     }
   }, [location?.state?.error]);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setResendSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendSeconds]);
 
  
   const safeFetch = async (url, body) => {
@@ -74,11 +78,14 @@ export default function LoginPage() {
 
     // If status is an error
     if (!res.ok) {
-      throw new Error(
+      const message =
         (data && (data.error || data.message)) ||
-        raw || 
-        `Server error (${res.status})`
-      );
+        raw ||
+        `Server error (${res.status})`;
+      const err = new Error(message);
+      err.code = data?.code;
+      err.status = res.status;
+      throw err;
     }
 
     // If success but backend returned plain text
@@ -103,6 +110,8 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoginSuccess('');
+    setShowMigrationModal(false);
 
     if (forgotMode) return handleForgotFlow();
 
@@ -140,11 +149,51 @@ export default function LoginPage() {
       setIsSignup(false);
 
     } catch (err) {
+      if (err.code === 'MIGRATION_RESET_REQUIRED') {
+        setShowMigrationModal(true);
+        setForgotMode(false);
+        setResetStep(1);
+        setError('');
+        return;
+      }
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+const sendResetCode = async (email) => {
+  const res = await safeFetch(
+    `${API_BASE_URL}/api/auth/forgot-password`,
+    { email: email.trim() }
+  );
+
+  if (!res?.success && res?.error) throw new Error(res.error);
+
+  setResetStep(2);
+  setResendSeconds(60);
+};
+
+const handleMigrationReset = async () => {
+  if (!Email.trim()) {
+    setError('Please enter your email first.');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+  setResetSuccess('');
+
+  try {
+    await sendResetCode(Email);
+    setForgotMode(true);
+    setShowMigrationModal(false);
+  } catch (err) {
+    setError(err.message || 'Something went wrong.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 const handleForgotFlow = async () => {
   setLoading(true);
@@ -153,14 +202,7 @@ const handleForgotFlow = async () => {
 
   try {
     if (resetStep === 1) {
-      const res = await safeFetch(
-        `${API_BASE_URL}/api/auth/forgot-password`,
-        { email: Email.trim() }
-      );
-
-      if (!res?.success && res?.error) throw new Error(res.error);
-
-      setResetStep(2);
+      await sendResetCode(Email);
       return;
     }
 
@@ -178,7 +220,10 @@ const handleForgotFlow = async () => {
       if (!res?.success && res?.error) throw new Error(res.error);
 
       setResetSuccess('Code verified. You can set a new password now.');
-      setResetStep(3);
+      setTimeout(() => {
+        setResetSuccess('');
+        setResetStep(3);
+      }, 1500);
       return;
     }
 
@@ -199,15 +244,23 @@ const handleForgotFlow = async () => {
 
       if (!res?.success && res?.error) throw new Error(res.error);
 
-      setError('✅ Password updated! Please log in.');
+      setLoginSuccess('Password updated. Please log in.');
       setForgotMode(false);
       setResetStep(1);
       setResetSuccess('');
+      setIsSignup(false);
       return;
     }
   } catch (err) {
     console.error("❌ ERROR CAUGHT:", err);
-    setError(err.message || 'Something went wrong.');
+    const message = err.message || 'Something went wrong.';
+    if (message.toLowerCase().includes('invalid code')) {
+      setError('That code looks wrong. Please confirm and try again.');
+    } else if (message.toLowerCase().includes('expired')) {
+      setError('Code expired. Please request a new code.');
+    } else {
+      setError(message);
+    }
   } finally {
     setLoading(false);
   }
@@ -217,6 +270,12 @@ const handleForgotFlow = async () => {
   const handleInputChange = (setter) => (e) => {
     setter(e.target.value);
     if (error) setError('');
+    if (loginSuccess) setLoginSuccess('');
+  };
+
+  const formatSeconds = (totalSeconds) => {
+    const seconds = Math.max(totalSeconds, 0);
+    return `00:${String(seconds).padStart(2, '0')}`;
   };
 
   // --------------------------
@@ -239,7 +298,7 @@ const handleForgotFlow = async () => {
       <div className="glass-form">
 
         {/* Hide toggle if in forgot mode */}
-        {!forgotMode && !migrationMode && (
+        {!forgotMode && (
           <div className="toggle-buttons">
             <button
               className={!isSignup ? 'active' : ''}
@@ -262,7 +321,7 @@ const handleForgotFlow = async () => {
         )}
 
         <h2>
-          {forgotMode || migrationMode
+          {forgotMode
             ? resetStep === 1
               ? 'Reset Password'
               : resetStep === 2
@@ -276,14 +335,8 @@ const handleForgotFlow = async () => {
         <form onSubmit={handleSubmit}>
 
           {/* --------------- FORGOT PASSWORD UI --------------- */}
-          {(forgotMode || migrationMode) && (
+          {forgotMode && (
             <>
-              {resetStep === 1 && (
-                <p className="error-text" style={{ color: '#fff' }}>
-                  We updated our systems, please click the button below to reset your password.
-                </p>
-              )}
-
               {resetStep === 1 && (
                 <input
                   type="email"
@@ -295,18 +348,33 @@ const handleForgotFlow = async () => {
               )}
 
               {resetStep === 2 && (
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="6-digit code"
-                  value={resetCode}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    setResetCode(val);
-                    if (error) setError('');
-                  }}
-                  required
-                />
+                <>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="6-digit code"
+                    value={resetCode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setResetCode(val);
+                      if (error) setError('');
+                    }}
+                    required
+                  />
+                  <div className="resend-row">
+                    <button
+                      type="button"
+                      className="resend-button"
+                      onClick={() => sendResetCode(Email)}
+                      disabled={resendSeconds > 0}
+                    >
+                      Resend Code
+                    </button>
+                    {resendSeconds > 0 && (
+                      <span className="resend-timer">Resend in {formatSeconds(resendSeconds)}</span>
+                    )}
+                  </div>
+                </>
               )}
 
               {resetStep === 3 && (
@@ -328,7 +396,7 @@ const handleForgotFlow = async () => {
                 </>
               )}
 
-              {resetSuccess && <p className="error-text" style={{ color: '#7CFF9B' }}>{resetSuccess}</p>}
+              {resetSuccess && <p className="success-text">{resetSuccess}</p>}
               {error && <p className="error-text">{error}</p>}
 
               <button className="signin-up-butt" type="submit">
@@ -339,23 +407,21 @@ const handleForgotFlow = async () => {
                   : 'Reset Password'}
               </button>
 
-              {!migrationMode && (
-                <p
-                  style={{ marginTop: '10px', cursor: 'pointer', color: '#fff' }}
-                  onClick={() => {
-                    setForgotMode(false);
-                    setResetStep(1);
-                    setError('');
-                  }}
-                >
-                  Back to Login
-                </p>
-              )}
+              <p
+                style={{ marginTop: '10px', cursor: 'pointer', color: '#fff' }}
+                onClick={() => {
+                  setForgotMode(false);
+                  setResetStep(1);
+                  setError('');
+                }}
+              >
+                Back to Login
+              </p>
             </>
           )}
 
           {/* --------------- NORMAL LOGIN/SIGNUP UI --------------- */}
-          {!forgotMode && !migrationMode && (
+          {!forgotMode && (
             <>
               {isSignup && (
                 <>
@@ -415,6 +481,7 @@ const handleForgotFlow = async () => {
                 />
               )}
 
+              {loginSuccess && <p className="success-text">{loginSuccess}</p>}
               {error && <p className="error-text">{error}</p>}
 
               <button className="signin-up-butt" type="submit">
@@ -438,6 +505,31 @@ const handleForgotFlow = async () => {
 
         </form>
       </div>
+      {showMigrationModal && (
+        <div className="migration-modal">
+          <div className="migration-modal__content">
+            <p className="migration-modal__text">
+              We updated our systems, please click the button below to reset your password.
+            </p>
+            <div className="migration-modal__actions">
+              <button
+                className="signin-up-butt"
+                type="button"
+                onClick={handleMigrationReset}
+              >
+                Reset Password
+              </button>
+              <button
+                className="modal-close"
+                type="button"
+                onClick={() => setShowMigrationModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

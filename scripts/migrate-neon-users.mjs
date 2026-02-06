@@ -15,16 +15,17 @@ const getArg = (name, fallback = null) => {
 const hasFlag = (name) => args.includes(name);
 
 const filePath = getArg('--file', 'neon.sql');
-const dryRun = hasFlag('--dry-run') || (!hasFlag('--create') && !hasFlag('--send-reset'));
 const doCreate = hasFlag('--create');
 const doSendReset = hasFlag('--send-reset');
+const doMarkMigrated = hasFlag('--mark-migrated');
+const dryRun = hasFlag('--dry-run') || (!doCreate && !doSendReset && !doMarkMigrated);
 const limit = Number(getArg('--limit', '0'));
 const redirectTo = process.env.RESET_REDIRECT_URL || '';
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const serviceKey = process.env.SUPABASE_SERVICE_KEY || '';
 
-if ((doCreate || doSendReset) && (!supabaseUrl || !serviceKey)) {
+if ((doCreate || doSendReset || doMarkMigrated) && (!supabaseUrl || !serviceKey)) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY in environment.');
   process.exit(1);
 }
@@ -82,13 +83,32 @@ if (limit > 0) users = users.slice(0, limit);
 console.log(`Found ${users.length} unique users to import.`);
 
 if (dryRun) {
-  console.log('Dry run only. Use --create to import or --send-reset to send reset emails.');
+  console.log('Dry run only. Use --create to import, --mark-migrated to tag users, or --send-reset to send reset emails.');
   process.exit(0);
 }
 
 const supabase = createClient(supabaseUrl, serviceKey, {
   auth: { persistSession: false }
 });
+
+const fetchUserByEmail = async (email) => {
+  const res = await fetch(`${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`
+    }
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Lookup failed with status ${res.status}`);
+  }
+
+  const data = await res.json();
+  const user = Array.isArray(data?.users) ? data.users[0] : data?.user || null;
+  return user;
+};
 
 const makeTempPassword = () => {
   return crypto.randomBytes(12).toString('base64url');
@@ -97,6 +117,7 @@ const makeTempPassword = () => {
 let created = 0;
 let skipped = 0;
 let resetSent = 0;
+let marked = 0;
 let failed = 0;
 
 for (const user of users) {
@@ -109,7 +130,9 @@ for (const user of users) {
         email_confirm: true,
         user_metadata: {
           full_name: user.fullName,
-          title: user.title
+          title: user.title,
+          migrated: true,
+          password_reset_complete: false
         }
       });
 
@@ -124,6 +147,44 @@ for (const user of users) {
       } else if (data?.user?.id) {
         created += 1;
       }
+    }
+
+    if (doMarkMigrated) {
+      let existingUser = null;
+      try {
+        existingUser = await fetchUserByEmail(user.email);
+      } catch (lookupErr) {
+        console.error(`Lookup failed for ${user.email}: ${lookupErr?.message || lookupErr}`);
+        failed += 1;
+        continue;
+      }
+
+      if (!existingUser?.id) {
+        console.error(`Lookup failed for ${user.email}: User not found`);
+        failed += 1;
+        continue;
+      }
+
+      const existing = existingUser.user_metadata || {};
+      const merged = {
+        ...existing,
+        migrated: true,
+        password_reset_complete: false,
+        full_name: existing.full_name || user.fullName,
+        title: existing.title || user.title
+      };
+
+      const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, {
+        user_metadata: merged
+      });
+
+      if (updateError) {
+        console.error(`Metadata update failed for ${user.email}: ${updateError.message}`);
+        failed += 1;
+        continue;
+      }
+
+      marked += 1;
     }
 
     if (doSendReset) {
@@ -147,5 +208,6 @@ for (const user of users) {
 console.log('Done.');
 console.log(`Created: ${created}`);
 console.log(`Skipped (already exists): ${skipped}`);
+console.log(`Marked migrated: ${marked}`);
 console.log(`Reset emails sent: ${resetSent}`);
 console.log(`Failed: ${failed}`);

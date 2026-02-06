@@ -138,13 +138,25 @@ app.post('/login', async (c) => {
     if (signInRes.error || !signInRes.access_token) {
       // Extract error message, ensuring it's a string
       let errorMsg = 'Invalid email or password';
-      
+
       if (typeof signInRes.error === 'string') {
         errorMsg = signInRes.error;
       } else if (signInRes.error?.message) {
         errorMsg = signInRes.error.message;
       }
-      
+
+      try {
+        const lookup = await supabase.auth.getUserByEmail(email, c.env.SUPABASE_SERVICE_KEY);
+        const user = lookup?.users?.[0] || lookup?.user || null;
+        const metadata = user?.user_metadata || {};
+
+        if (metadata.migrated && !metadata.password_reset_complete) {
+          return c.json({ error: 'Password reset required', code: 'MIGRATION_RESET_REQUIRED' }, 403);
+        }
+      } catch (lookupErr) {
+        console.warn('Login lookup failed:', lookupErr?.message || lookupErr);
+      }
+
       console.log('Login failed:', errorMsg);
       return c.json({ error: errorMsg }, 401);
     }
@@ -276,6 +288,15 @@ app.post('/reset-password', async (c) => {
     const updateRes = await supabase.auth.updateUserPassword(user.id, newPassword, c.env.SUPABASE_SERVICE_KEY);
     if (updateRes.error) {
       return c.json({ error: updateRes.error.message }, 400);
+    }
+
+    try {
+      await supabase.auth.updateUserMetadata(user.id, {
+        migrated: true,
+        password_reset_complete: true
+      }, c.env.SUPABASE_SERVICE_KEY);
+    } catch (metaErr) {
+      console.warn('Could not update migration flags:', metaErr?.message || metaErr);
     }
 
     await c.env.LSTS_KV.delete(`reset:verified:${email}`);
