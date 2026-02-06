@@ -34,7 +34,6 @@ const sendResetCodeEmail = async (env, email, code) => {
 
   const senderName = env.RESEND_SENDER_NAME || 'Divine Grace UNN';
   const from = `${senderName} <${env.RESEND_SENDER_EMAIL}>`;
-  const logoUrl = env.RESEND_LOGO_URL || (env.R2_PUBLIC_URL ? `${env.R2_PUBLIC_URL}/email/logo.png` : '');
 
   const payload = {
     from,
@@ -42,7 +41,6 @@ const sendResetCodeEmail = async (env, email, code) => {
     subject: 'Your password reset code',
     html: `
       <div style="font-family: Arial, sans-serif;">
-        ${logoUrl ? `<img src="${logoUrl}" alt="${senderName}" width="140" style="display:block;margin:0 auto 16px;" />` : ''}
         <p>Hello,</p>
         <p>Your password reset code is:</p>
         <h2 style="letter-spacing: 2px;">${code}</h2>
