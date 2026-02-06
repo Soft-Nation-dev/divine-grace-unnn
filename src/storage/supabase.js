@@ -77,6 +77,34 @@ export const getSupabaseClient = (env) => {
         });
 
         return res.json();
+      },
+
+      getUserByEmail: async (email, key = serviceKey) => {
+        const res = await fetch(`${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${key}`
+          }
+        });
+
+        return res.json();
+      },
+
+      updateUserPassword: async (userId, password, key = serviceKey) => {
+        const res = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: supabaseKey,
+            Authorization: `Bearer ${key}`
+          },
+          body: JSON.stringify({
+            password
+          })
+        });
+
+        return res.json();
       }
     },
 

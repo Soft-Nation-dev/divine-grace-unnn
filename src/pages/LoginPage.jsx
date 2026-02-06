@@ -8,6 +8,8 @@ export default function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const migrationMode = true;
+
   const initialIsSignup = location?.state?.initialTab === 'register';
   const [isSignup, setIsSignup] = useState(initialIsSignup);
   const [Title, setTitle] = useState('');
@@ -25,11 +27,19 @@ export default function LoginPage() {
   const [resetCode, setResetCode] = useState('');
   const [newPass1, setNewPass1] = useState('');
   const [newPass2, setNewPass2] = useState('');
+  const [resetSuccess, setResetSuccess] = useState('');
 
   useEffect(() => {
     if (location?.state?.initialTab === 'register') setIsSignup(true);
     if (location?.state?.initialTab === 'login') setIsSignup(false);
   }, [location?.state?.initialTab]);
+
+  useEffect(() => {
+    if (migrationMode) {
+      setForgotMode(true);
+      setIsSignup(false);
+    }
+  }, [migrationMode]);
 
   useEffect(() => {
     const navError = location?.state?.error;
@@ -139,10 +149,9 @@ export default function LoginPage() {
 const handleForgotFlow = async () => {
   setLoading(true);
   setError('');
+  setResetSuccess('');
 
   try {
-
-    // STEP 1 — SEND CODE
     if (resetStep === 1) {
       const res = await safeFetch(
         `${API_BASE_URL}/api/auth/forgot-password`,
@@ -158,7 +167,7 @@ const handleForgotFlow = async () => {
     // STEP 2 — VERIFY CODE
     if (resetStep === 2) {
       if (resetCode.trim().length !== 6) {
-        throw new Error('Code must be exactly 4 digits.');
+        throw new Error('Code must be exactly 6 digits.');
       }
 
       const res = await safeFetch(
@@ -168,6 +177,7 @@ const handleForgotFlow = async () => {
 
       if (!res?.success && res?.error) throw new Error(res.error);
 
+      setResetSuccess('Code verified. You can set a new password now.');
       setResetStep(3);
       return;
     }
@@ -192,6 +202,7 @@ const handleForgotFlow = async () => {
       setError('✅ Password updated! Please log in.');
       setForgotMode(false);
       setResetStep(1);
+      setResetSuccess('');
       return;
     }
   } catch (err) {
@@ -228,7 +239,7 @@ const handleForgotFlow = async () => {
       <div className="glass-form">
 
         {/* Hide toggle if in forgot mode */}
-        {!forgotMode && (
+        {!forgotMode && !migrationMode && (
           <div className="toggle-buttons">
             <button
               className={!isSignup ? 'active' : ''}
@@ -251,7 +262,7 @@ const handleForgotFlow = async () => {
         )}
 
         <h2>
-          {forgotMode
+          {forgotMode || migrationMode
             ? resetStep === 1
               ? 'Reset Password'
               : resetStep === 2
@@ -265,8 +276,14 @@ const handleForgotFlow = async () => {
         <form onSubmit={handleSubmit}>
 
           {/* --------------- FORGOT PASSWORD UI --------------- */}
-          {forgotMode && (
+          {(forgotMode || migrationMode) && (
             <>
+              {resetStep === 1 && (
+                <p className="error-text" style={{ color: '#fff' }}>
+                  We updated our systems, please click the button below to reset your password.
+                </p>
+              )}
+
               {resetStep === 1 && (
                 <input
                   type="email"
@@ -281,7 +298,7 @@ const handleForgotFlow = async () => {
                 <input
                   type="text"
                   maxLength={6}
-                  placeholder="4-digit code"
+                  placeholder="6-digit code"
                   value={resetCode}
                   onChange={(e) => {
                     const val = e.target.value.replace(/\D/g, '');
@@ -311,6 +328,7 @@ const handleForgotFlow = async () => {
                 </>
               )}
 
+              {resetSuccess && <p className="error-text" style={{ color: '#7CFF9B' }}>{resetSuccess}</p>}
               {error && <p className="error-text">{error}</p>}
 
               <button className="signin-up-butt" type="submit">
@@ -321,21 +339,23 @@ const handleForgotFlow = async () => {
                   : 'Reset Password'}
               </button>
 
-              <p
-                style={{ marginTop: '10px', cursor: 'pointer', color: '#fff' }}
-                onClick={() => {
-                  setForgotMode(false);
-                  setResetStep(1);
-                  setError('');
-                }}
-              >
-                Back to Login
-              </p>
+              {!migrationMode && (
+                <p
+                  style={{ marginTop: '10px', cursor: 'pointer', color: '#fff' }}
+                  onClick={() => {
+                    setForgotMode(false);
+                    setResetStep(1);
+                    setError('');
+                  }}
+                >
+                  Back to Login
+                </p>
+              )}
             </>
           )}
 
           {/* --------------- NORMAL LOGIN/SIGNUP UI --------------- */}
-          {!forgotMode && (
+          {!forgotMode && !migrationMode && (
             <>
               {isSignup && (
                 <>
