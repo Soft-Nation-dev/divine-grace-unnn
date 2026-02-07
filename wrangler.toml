@@ -25,6 +25,7 @@ bucket_name = "divine-grace-storage"
 # Default environment variables
 [vars]
 ENVIRONMENT = "production"
+FRONTEND_URL = "https://divinegraceunn.com.ng"
 
 [env.development]
 vars = { ENVIRONMENT = "development" }

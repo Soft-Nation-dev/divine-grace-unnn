@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import { useNavigate, Link} from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -12,6 +12,20 @@ export default function LandingPage() {
   React.useEffect(() => {
     AOS.init({ duration: 2000 });
   }, []);
+
+  React.useEffect(() => {
+    const hash = window.location.hash || '';
+    if (!hash.startsWith('#access_token=')) return;
+
+    const params = new URLSearchParams(hash.slice(1));
+    const accessToken = params.get('access_token');
+    const type = params.get('type');
+
+    if (accessToken && type === 'recovery') {
+      sessionStorage.setItem('recoveryToken', accessToken);
+      navigate('/login');
+    }
+  }, [navigate]);
 
 const [videoLoaded, setVideoLoaded] = useState(false);
 const [overlayLoaded, setOverlayLoaded] = useState(false);

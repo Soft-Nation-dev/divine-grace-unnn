@@ -5,64 +5,65 @@
 
 import { Hono } from 'hono';
 import { getSupabaseClient } from '../storage/supabase';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, adminMiddleware } from '../middleware/auth';
 
 const app = new Hono();
 
-const RESET_CODE_TTL_SECONDS = 900;
-
 const normalizeEmail = (email) => (email || '').trim().toLowerCase();
 
-const generateResetCode = () => {
-  const code = Math.floor(100000 + Math.random() * 900000);
-  return String(code);
-};
-
-const hashCode = async (code) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(code);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-};
-
-const sendResetCodeEmail = async (env, email, code) => {
-  if (!env.RESEND_API_KEY || !env.RESEND_SENDER_EMAIL) {
-    throw new Error('Email service not configured');
+const getRecoveryRedirectUrl = (c) => {
+  const configured = c.env.FRONTEND_URL;
+  if (configured) {
+    return `${configured.replace(/\/$/, '')}/login`;
   }
 
-  const senderName = env.RESEND_SENDER_NAME || 'Divine Grace UNN';
-  const from = `${senderName} <${env.RESEND_SENDER_EMAIL}>`;
+  const origin = c.req.header('Origin');
+  if (origin) {
+    return `${origin.replace(/\/$/, '')}/login`;
+  }
 
-  const payload = {
-    from,
-    to: [email],
-    subject: 'Your password reset code',
-    html: `
-      <div style="font-family: Arial, sans-serif;">
-        <p>Hello,</p>
-        <p>Your password reset code is:</p>
-        <h2 style="letter-spacing: 2px;">${code}</h2>
-        <p>This code expires in 15 minutes.</p>
-        <p>If you did not request a reset, you can ignore this email.</p>
-      </div>
-    `
-  };
+  const referer = c.req.header('Referer');
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      return `${url.origin}/login`;
+    } catch (err) {
+      console.warn('Invalid referer URL:', err?.message || err);
+    }
+  }
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${env.RESEND_API_KEY}`
-    },
-    body: JSON.stringify(payload)
-  });
+  return null;
+};
 
+const generateStrongPassword = (length = 18) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*()-_=+[]{}';
+  const bytes = new Uint32Array(length);
+  crypto.getRandomValues(bytes);
+  let result = '';
+  for (let i = 0; i < length; i += 1) {
+    result += chars[bytes[i] % chars.length];
+  }
+  return result;
+};
+
+const listAdminUsers = async (env, page = 1, perPage = 100) => {
+  const res = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${perPage}`,
+    {
+      method: 'GET',
+      headers: {
+        apikey: env.SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`
+      }
+    }
+  );
+
+  const data = await res.json();
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Resend email failed: ${text}`);
+    const message = data?.error?.message || data?.error || data?.message || 'Failed to list users';
+    return { error: message, statusCode: res.status };
   }
+
+  return data;
 };
 
 // =============================================
@@ -73,15 +74,15 @@ app.post('/signup', async (c) => {
     const body = await c.req.json();
     const { email, password, title, fullName, full_name } = body;
     const resolvedName = fullName || full_name || '';
+    const normalizedEmail = normalizeEmail(email);
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return c.json({ error: 'Email and password required' }, 400);
     }
 
     const supabase = getSupabaseClient(c.env);
 
-    // Create user in Supabase
-    const signUpRes = await supabase.auth.signUp(email, password, {
+    const signUpRes = await supabase.auth.signUp(normalizedEmail, password, {
       title: title || '',
       full_name: resolvedName,
       email_confirmed: true
@@ -91,17 +92,15 @@ app.post('/signup', async (c) => {
       return c.json({ error: signUpRes.error.message }, 400);
     }
 
-    // Update user metadata with service key to ensure it persists
     const userId = signUpRes.user?.id;
     if (userId) {
       try {
-        const updateRes = await supabase.auth.updateUserMetadata(userId, {
+        await supabase.auth.updateUserMetadata(userId, {
           title: title || '',
           full_name: resolvedName
         }, c.env.SUPABASE_SERVICE_KEY);
-        console.log('User metadata updated:', updateRes);
       } catch (err) {
-        console.warn('Could not update user metadata:', err);
+        console.warn('Could not update user metadata:', err?.message || err);
       }
     }
 
@@ -110,7 +109,6 @@ app.post('/signup', async (c) => {
       user: signUpRes.user || signUpRes?.user,
       session: signUpRes.session || null
     }, 201);
-
   } catch (err) {
     console.error('Signup error:', err);
     return c.json({ error: err.message }, 500);
@@ -124,19 +122,17 @@ app.post('/login', async (c) => {
   try {
     const body = await c.req.json();
     const { email, password } = body;
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPassword = (password || '').trim();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !normalizedPassword) {
       return c.json({ error: 'Email and password required' }, 400);
     }
 
     const supabase = getSupabaseClient(c.env);
+    const signInRes = await supabase.auth.signIn(normalizedEmail, normalizedPassword);
 
-    // Sign in user
-    const signInRes = await supabase.auth.signIn(email, password);
-
-    // Check for any error (from Supabase or from our check)
     if (signInRes.error || !signInRes.access_token) {
-      // Extract error message, ensuring it's a string
       let errorMsg = 'Invalid email or password';
 
       if (typeof signInRes.error === 'string') {
@@ -146,7 +142,7 @@ app.post('/login', async (c) => {
       }
 
       try {
-        const lookup = await supabase.auth.getUserByEmail(email, c.env.SUPABASE_SERVICE_KEY);
+        const lookup = await supabase.auth.getUserByEmail(normalizedEmail, c.env.SUPABASE_SERVICE_KEY);
         const user = lookup?.users?.[0] || lookup?.user || null;
         const metadata = user?.user_metadata || {};
 
@@ -157,7 +153,6 @@ app.post('/login', async (c) => {
         console.warn('Login lookup failed:', lookupErr?.message || lookupErr);
       }
 
-      console.log('Login failed:', errorMsg);
       return c.json({ error: errorMsg }, 401);
     }
 
@@ -172,7 +167,6 @@ app.post('/login', async (c) => {
         token_type: signInRes.token_type
       }
     });
-
   } catch (err) {
     console.error('Login error:', err);
     return c.json({ error: err.message }, 500);
@@ -180,7 +174,7 @@ app.post('/login', async (c) => {
 });
 
 // =============================================
-// POST /api/auth/forgot-password - Send reset code
+// POST /api/auth/forgot-password - Send recovery email
 // =============================================
 app.post('/forgot-password', async (c) => {
   try {
@@ -191,23 +185,25 @@ app.post('/forgot-password', async (c) => {
       return c.json({ error: 'Email required' }, 400);
     }
 
-    const supabase = getSupabaseClient(c.env);
-    const lookup = await supabase.auth.getUserByEmail(email, c.env.SUPABASE_SERVICE_KEY);
-    const user = lookup?.users?.[0] || lookup?.user || null;
-
-    if (!user) {
-      return c.json({ success: true });
+    const redirectTo = getRecoveryRedirectUrl(c);
+    if (!redirectTo) {
+      return c.json({ error: 'Missing redirect URL for password recovery' }, 500);
     }
 
-    const code = generateResetCode();
-    const hashed = await hashCode(code);
-    const key = `reset:code:${email}`;
-
-    await c.env.LSTS_KV.put(key, JSON.stringify({ hash: hashed, createdAt: Date.now() }), {
-      expirationTtl: RESET_CODE_TTL_SECONDS
+    const res = await fetch(`${c.env.SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: c.env.SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ email, redirect_to: redirectTo })
     });
 
-    await sendResetCodeEmail(c.env, email, code);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const message = data?.error_description || data?.error || data?.msg || data?.message || 'Failed to send reset link';
+      return c.json({ error: message }, res.status);
+    }
 
     return c.json({ success: true });
   } catch (err) {
@@ -217,95 +213,55 @@ app.post('/forgot-password', async (c) => {
 });
 
 // =============================================
-// POST /api/auth/verify-reset-code - Verify code
+// POST /api/auth/recover-password - Set new password via recovery token
 // =============================================
-app.post('/verify-reset-code', async (c) => {
+app.post('/recover-password', async (c) => {
   try {
     const body = await c.req.json();
-    const email = normalizeEmail(body?.email);
-    const code = (body?.code || '').trim();
+    const accessToken = (body?.access_token || '').trim();
+    const newPassword = (body?.newPassword || '').trim();
+    const confirmPassword = (body?.confirmPassword || '').trim();
 
-    if (!email || !code) {
-      return c.json({ error: 'Email and code required' }, 400);
-    }
-
-    const key = `reset:code:${email}`;
-    const stored = await c.env.LSTS_KV.get(key);
-
-    if (!stored) {
-      return c.json({ error: 'Code expired or invalid' }, 400);
-    }
-
-    const parsed = JSON.parse(stored);
-    const hashed = await hashCode(code);
-
-    if (hashed !== parsed.hash) {
-      return c.json({ error: 'Invalid code' }, 400);
-    }
-
-    await c.env.LSTS_KV.put(`reset:verified:${email}`, 'true', {
-      expirationTtl: RESET_CODE_TTL_SECONDS
-    });
-
-    return c.json({ success: true });
-  } catch (err) {
-    console.error('Verify reset code error:', err);
-    return c.json({ error: err.message }, 500);
-  }
-});
-
-// =============================================
-// POST /api/auth/reset-password - Set new password
-// =============================================
-app.post('/reset-password', async (c) => {
-  try {
-    const body = await c.req.json();
-    const email = normalizeEmail(body?.email);
-    const newPassword = body?.newPassword || '';
-    const confirmPassword = body?.confirmPassword || '';
-
-    if (!email || !newPassword || !confirmPassword) {
-      return c.json({ error: 'Email and password required' }, 400);
+    if (!accessToken || !newPassword || !confirmPassword) {
+      return c.json({ error: 'Token and password required' }, 400);
     }
 
     if (newPassword !== confirmPassword) {
       return c.json({ error: 'Passwords do not match' }, 400);
     }
 
-    const verified = await c.env.LSTS_KV.get(`reset:verified:${email}`);
-    if (!verified) {
-      return c.json({ error: 'Please verify your code first' }, 400);
+    const res = await fetch(`${c.env.SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: c.env.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ password: newPassword })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const message = data?.error_description || data?.error || data?.msg || data?.message || 'Password update failed';
+      return c.json({ error: message }, res.status);
     }
 
-    const supabase = getSupabaseClient(c.env);
-    const lookup = await supabase.auth.getUserByEmail(email, c.env.SUPABASE_SERVICE_KEY);
-    const user = lookup?.users?.[0] || lookup?.user || null;
-
-    if (!user?.id) {
-      return c.json({ error: 'User not found' }, 404);
+    const userId = data?.id || data?.user?.id || null;
+    if (userId) {
+      try {
+        const supabase = getSupabaseClient(c.env);
+        await supabase.auth.updateUserMetadata(userId, {
+          migrated: true,
+          password_reset_complete: true
+        }, c.env.SUPABASE_SERVICE_KEY);
+      } catch (metaErr) {
+        console.warn('Recover password metadata update failed:', metaErr?.message || metaErr);
+      }
     }
-
-    const updateRes = await supabase.auth.updateUserPassword(user.id, newPassword, c.env.SUPABASE_SERVICE_KEY);
-    const updateError = updateRes?.error?.message || updateRes?.error || null;
-    if (updateError) {
-      return c.json({ error: updateError }, updateRes?.statusCode || 400);
-    }
-
-    try {
-      await supabase.auth.updateUserMetadata(user.id, {
-        migrated: true,
-        password_reset_complete: true
-      }, c.env.SUPABASE_SERVICE_KEY);
-    } catch (metaErr) {
-      console.warn('Could not update migration flags:', metaErr?.message || metaErr);
-    }
-
-    await c.env.LSTS_KV.delete(`reset:verified:${email}`);
-    await c.env.LSTS_KV.delete(`reset:code:${email}`);
 
     return c.json({ success: true });
   } catch (err) {
-    console.error('Reset password error:', err);
+    console.error('Recover password error:', err);
     return c.json({ error: err.message }, 500);
   }
 });
@@ -318,13 +274,7 @@ app.get('/profile', authMiddleware, async (c) => {
     const user = c.get('user');
     const userId = c.get('userId');
     const userEmail = c.get('userEmail');
-
-    console.log('Profile endpoint - user object:', JSON.stringify(user, null, 2));
-
-    // Extract metadata from Supabase user object
     const metadata = user?.user_metadata || {};
-
-    console.log('Profile endpoint - metadata:', metadata);
 
     const response = {
       id: userId,
@@ -337,10 +287,7 @@ app.get('/profile', authMiddleware, async (c) => {
       level: metadata.level || ''
     };
 
-    console.log('Profile endpoint - response:', response);
-
     return c.json(response);
-
   } catch (err) {
     console.error('Profile fetch error:', err);
     return c.json({ error: err.message }, 500);
@@ -356,8 +303,6 @@ app.put('/profile', authMiddleware, async (c) => {
     const body = await c.req.json();
 
     const supabase = getSupabaseClient(c.env);
-
-    // Update user metadata in Supabase using service key
     const updateRes = await supabase.auth.updateUserMetadata(userId, body, c.env.SUPABASE_SERVICE_KEY);
 
     if (updateRes.error) {
@@ -369,7 +314,6 @@ app.put('/profile', authMiddleware, async (c) => {
       message: 'Profile updated successfully',
       user: updateRes.user || updateRes
     });
-
   } catch (err) {
     console.error('Profile update error:', err);
     return c.json({ error: err.message }, 500);
@@ -379,9 +323,125 @@ app.put('/profile', authMiddleware, async (c) => {
 // =============================================
 // POST /api/auth/logout - User logout
 // =============================================
-app.post('/logout', authMiddleware, async (c) => {
-  // Logout is handled on client-side by removing token
-  return c.json({ message: 'Logout successful' });
+app.post('/logout', authMiddleware, async (c) => c.json({ message: 'Logout successful' }));
+
+// =============================================
+// POST /api/auth/admin/reissue-passwords - Batch reset migrated users
+// =============================================
+app.post('/admin/reissue-passwords', authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const limit = Number(body?.limit ?? 50);
+    const includePasswords = body?.includePasswords !== false;
+    const probe = body?.probe !== false;
+    const perPage = Number(body?.perPage ?? 100);
+
+    const supabase = getSupabaseClient(c.env);
+    const results = [];
+    let processed = 0;
+    let page = 1;
+
+    while (true) {
+      const listRes = await listAdminUsers(c.env, page, perPage);
+      if (listRes?.error) {
+        return c.json({ error: listRes.error }, listRes.statusCode || 500);
+      }
+
+      const users = Array.isArray(listRes?.users) ? listRes.users : [];
+      if (users.length === 0) break;
+
+      for (const user of users) {
+        const metadata = user?.user_metadata || {};
+        if (!metadata.migrated) continue;
+
+        const tempPassword = generateStrongPassword();
+        const updateRes = await supabase.auth.updateUserPassword(user.id, tempPassword, c.env.SUPABASE_SERVICE_KEY);
+        const updateError = updateRes?.error?.message || updateRes?.error || null;
+
+        let probeError = null;
+        let probeStatus = null;
+
+        if (!updateError && probe) {
+          const signInProbe = await supabase.auth.signIn(user.email, tempPassword);
+          probeError = signInProbe?.error || null;
+          probeStatus = signInProbe?.statusCode || null;
+        }
+
+        if (!updateError) {
+          try {
+            await supabase.auth.updateUserMetadata(user.id, {
+              ...metadata,
+              password_reset_complete: true
+            }, c.env.SUPABASE_SERVICE_KEY);
+          } catch (metaErr) {
+            console.warn('Password reissue metadata update failed:', metaErr?.message || metaErr);
+          }
+        }
+
+        const entry = {
+          email: user.email,
+          user_id: user.id,
+          status: updateError ? 'error' : 'updated',
+          error: updateError || null,
+          login_probe_error: probeError || null,
+          login_probe_status: probeStatus || null
+        };
+
+        if (includePasswords) {
+          entry.temp_password = tempPassword;
+        }
+
+        results.push(entry);
+        processed += 1;
+
+        if (limit > 0 && processed >= limit) break;
+      }
+
+      if (limit > 0 && processed >= limit) break;
+      page += 1;
+    }
+
+    return c.json({
+      success: true,
+      processed,
+      results
+    });
+  } catch (err) {
+    console.error('Reissue passwords error:', err);
+    return c.json({ error: err.message }, 500);
+  }
+});
+
+// =============================================
+// GET /api/auth/admin/migrated-count - Count migrated users
+// =============================================
+app.get('/admin/migrated-count', authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const perPage = Number(c.req.query('perPage') ?? 200);
+    let page = 1;
+    let total = 0;
+
+    while (true) {
+      const listRes = await listAdminUsers(c.env, page, perPage);
+      if (listRes?.error) {
+        return c.json({ error: listRes.error }, listRes.statusCode || 500);
+      }
+
+      const users = Array.isArray(listRes?.users) ? listRes.users : [];
+      if (users.length === 0) break;
+
+      for (const user of users) {
+        if (user?.user_metadata?.migrated) total += 1;
+      }
+
+      page += 1;
+    }
+
+    return c.json({ success: true, migrated_count: total });
+  } catch (err) {
+    console.error('Migrated count error:', err);
+    return c.json({ error: err.message }, 500);
+  }
 });
 
 export default app;

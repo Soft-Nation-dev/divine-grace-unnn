@@ -25,19 +25,47 @@ export default function LoginPage() {
   const [showMigrationModal, setShowMigrationModal] = useState(false);
 
   const [forgotMode, setForgotMode] = useState(false);
-  const [resetStep, setResetStep] = useState(1); // 1=email, 2=code, 3=new pass
-  const [resetCode, setResetCode] = useState('');
+  const [resetStep, setResetStep] = useState(1); // 1=email, 3=new pass
   const [newPass1, setNewPass1] = useState('');
   const [newPass2, setNewPass2] = useState('');
   const [showNewPass1, setShowNewPass1] = useState(false);
   const [showNewPass2, setShowNewPass2] = useState(false);
   const [resetSuccess, setResetSuccess] = useState('');
-  const [resendSeconds, setResendSeconds] = useState(0);
+  const [recoveryToken, setRecoveryToken] = useState('');
 
   useEffect(() => {
     if (location?.state?.initialTab === 'register') setIsSignup(true);
     if (location?.state?.initialTab === 'login') setIsSignup(false);
   }, [location?.state?.initialTab]);
+
+  useEffect(() => {
+    const hash = window.location.hash || '';
+    if (!hash.startsWith('#')) return;
+
+    const params = new URLSearchParams(hash.slice(1));
+    const accessToken = params.get('access_token');
+    const type = params.get('type');
+
+    if (accessToken && type === 'recovery') {
+      setRecoveryToken(accessToken);
+      setForgotMode(true);
+      setResetStep(3);
+      setResetSuccess('Set a new password to finish resetting your account.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (recoveryToken) return;
+    const storedToken = sessionStorage.getItem('recoveryToken');
+    if (!storedToken) return;
+
+    setRecoveryToken(storedToken);
+    setForgotMode(true);
+    setResetStep(3);
+    setResetSuccess('Set a new password to finish resetting your account.');
+    sessionStorage.removeItem('recoveryToken');
+  }, [recoveryToken]);
 
   useEffect(() => {
     const navError = location?.state?.error;
@@ -50,15 +78,8 @@ export default function LoginPage() {
     }
   }, [location?.state?.error]);
 
-  useEffect(() => {
-    if (resendSeconds <= 0) return;
 
-    const timer = setInterval(() => {
-      setResendSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [resendSeconds]);
+  const normalizeEmail = (value) => value.trim().toLowerCase();
 
  
   const safeFetch = async (url, body) => {
@@ -131,9 +152,11 @@ export default function LoginPage() {
         ? `${API_BASE_URL}${API_ENDPOINTS.SIGNUP}`
         : `${API_BASE_URL}${API_ENDPOINTS.LOGIN}`;
 
+      const normalizedEmail = normalizeEmail(Email);
+
       const body = isSignup
-        ? { title: Title, email: Email, full_name: FullName, password: Password }
-        : { email: Email, password: Password };
+        ? { title: Title, email: normalizedEmail, full_name: FullName, password: Password }
+        : { email: normalizedEmail, password: Password };
 
       const data = await safeFetch(url, body);
 
@@ -169,13 +192,12 @@ export default function LoginPage() {
 const sendResetCode = async (email) => {
   const res = await safeFetch(
     `${API_BASE_URL}/api/auth/forgot-password`,
-    { email: email.trim() }
+    { email: normalizeEmail(email) }
   );
 
   if (!res?.success && res?.error) throw new Error(res.error);
 
-  setResetStep(2);
-  setResendSeconds(60);
+  setResetSuccess('Check your email for a password reset link.');
 };
 
 const handleMigrationReset = async () => {
@@ -210,37 +232,24 @@ const handleForgotFlow = async () => {
       return;
     }
 
-    // STEP 2 — VERIFY CODE
-    if (resetStep === 2) {
-      if (resetCode.trim().length !== 6) {
-        throw new Error('Code must be exactly 6 digits.');
-      }
-
-      const res = await safeFetch(
-        `${API_BASE_URL}/api/auth/verify-reset-code`,
-        { email: Email.trim(), code: resetCode.trim() }
-      );
-
-      if (!res?.success && res?.error) throw new Error(res.error);
-
-      setResetSuccess('Code verified. You can set a new password now.');
-      setTimeout(() => {
-        setResetSuccess('');
-        setResetStep(3);
-      }, 1500);
-      return;
-    }
-
     // STEP 3 — RESET PASSWORD
     if (resetStep === 3) {
       if (newPass1 !== newPass2) {
         throw new Error('Passwords do not match.');
       }
 
+      if (newPass1.trim().length < 12) {
+        throw new Error('Password must be at least 12 characters.');
+      }
+
+      if (!recoveryToken) {
+        throw new Error('Use the reset link from your email to set a new password.');
+      }
+
       const res = await safeFetch(
-        `${API_BASE_URL}/api/auth/reset-password`,
+        `${API_BASE_URL}/api/auth/recover-password`,
         {
-          email: Email.trim(),
+          access_token: recoveryToken,
           newPassword: newPass1,
           confirmPassword: newPass2,
         }
@@ -252,19 +261,14 @@ const handleForgotFlow = async () => {
       setForgotMode(false);
       setResetStep(1);
       setResetSuccess('');
+      setRecoveryToken('');
       setIsSignup(false);
       return;
     }
   } catch (err) {
     console.error("❌ ERROR CAUGHT:", err);
     const message = err.message || 'Something went wrong.';
-    if (message.toLowerCase().includes('invalid code')) {
-      setError('That code looks wrong. Please confirm and try again.');
-    } else if (message.toLowerCase().includes('expired')) {
-      setError('Code expired. Please request a new code.');
-    } else {
-      setError(message);
-    }
+    setError(message);
   } finally {
     setLoading(false);
   }
@@ -275,11 +279,6 @@ const handleForgotFlow = async () => {
     setter(e.target.value);
     if (error) setError('');
     if (loginSuccess) setLoginSuccess('');
-  };
-
-  const formatSeconds = (totalSeconds) => {
-    const seconds = Math.max(totalSeconds, 0);
-    return `00:${String(seconds).padStart(2, '0')}`;
   };
 
   // --------------------------
@@ -328,8 +327,6 @@ const handleForgotFlow = async () => {
           {forgotMode
             ? resetStep === 1
               ? 'Reset Password'
-              : resetStep === 2
-              ? 'Verify Code'
               : 'Create New Password'
             : isSignup
             ? 'Create Account'
@@ -351,35 +348,6 @@ const handleForgotFlow = async () => {
                 />
               )}
 
-              {resetStep === 2 && (
-                <>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    placeholder="6-digit code"
-                    value={resetCode}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      setResetCode(val);
-                      if (error) setError('');
-                    }}
-                    required
-                  />
-                  <div className="resend-row">
-                    <button
-                      type="button"
-                      className="resend-button"
-                      onClick={() => sendResetCode(Email)}
-                      disabled={resendSeconds > 0}
-                    >
-                      Resend Code
-                    </button>
-                    {resendSeconds > 0 && (
-                      <span className="resend-timer">Resend in {formatSeconds(resendSeconds)}</span>
-                    )}
-                  </div>
-                </>
-              )}
 
               {resetStep === 3 && (
                 <>
@@ -429,10 +397,8 @@ const handleForgotFlow = async () => {
 
               <button className="signin-up-butt" type="submit">
                 {resetStep === 1
-                  ? 'Send Code'
-                  : resetStep === 2
-                  ? 'Verify Code'
-                  : 'Reset Password'}
+                  ? 'Send Reset Link'
+                  : 'Set New Password'}
               </button>
 
               <p
